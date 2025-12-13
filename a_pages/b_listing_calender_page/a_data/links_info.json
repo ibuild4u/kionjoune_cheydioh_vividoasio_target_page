@@ -1,0 +1,158 @@
+{
+  "properties": [
+    {
+      "id": "property_01",
+      "link": "https://www.zillow.com/homedetails/200-River-Vista-Dr-UNIT-743-Sandy-Springs-GA-30339/112430606_zpid/",
+      "address": "200 River Vista Dr UNIT 743, Sandy Springs, GA 30339",
+      "totalPrice": 450000,
+      "monthlyRent": 2800,
+      "estimatedMonthlyPayment": 3200,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1200
+    },
+    {
+      "id": "property_02",
+      "link": "https://www.zillow.com/homedetails/3820-Roswell-Rd-NE-UNIT-510-Atlanta-GA-30342/2084793296_zpid/",
+      "address": "3820 Roswell Rd NE UNIT 510, Atlanta, GA 30342",
+      "totalPrice": 525000,
+      "monthlyRent": 3200,
+      "estimatedMonthlyPayment": 3700,
+      "bedrooms": 2,
+      "bathrooms": 2.5,
+      "sqft": 1450
+    },
+    {
+      "id": "property_03",
+      "link": "https://www.zillow.com/homedetails/3235-Roswell-Rd-NE-UNIT-505-Atlanta-GA-30305/55018925_zpid/",
+      "address": "3235 Roswell Rd NE UNIT 505, Atlanta, GA 30305",
+      "totalPrice": 380000,
+      "monthlyRent": 2500,
+      "estimatedMonthlyPayment": 2900,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "sqft": 950
+    },
+    {
+      "id": "property_04",
+      "link": "https://www.zillow.com/homedetails/2277-Peachtree-Rd-NE-UNIT-407-Atlanta-GA-30309/69380923_zpid/",
+      "address": "2277 Peachtree Rd NE UNIT 407, Atlanta, GA 30309",
+      "totalPrice": 650000,
+      "monthlyRent": 3800,
+      "estimatedMonthlyPayment": 4500,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "sqft": 1800
+    },
+    {
+      "id": "property_05",
+      "link": "https://www.zillow.com/homedetails/3334-Peachtree-Rd-NE-APT-608-Atlanta-GA-30326/55018193_zpid/",
+      "address": "3334 Peachtree Rd NE APT 608, Atlanta, GA 30326",
+      "totalPrice": 425000,
+      "monthlyRent": 2700,
+      "estimatedMonthlyPayment": 3100,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1150
+    },
+    {
+      "id": "property_06",
+      "link": "https://www.zillow.com/homedetails/3324-Peachtree-Rd-NE-UNIT-902-Atlanta-GA-30326/82619582_zpid/",
+      "address": "3324 Peachtree Rd NE UNIT 902, Atlanta, GA 30326",
+      "totalPrice": 580000,
+      "monthlyRent": 3400,
+      "estimatedMonthlyPayment": 4000,
+      "bedrooms": 2,
+      "bathrooms": 2.5,
+      "sqft": 1550
+    },
+    {
+      "id": "property_07",
+      "link": "https://www.zillow.com/homedetails/3530-Piedmont-Rd-NE-APT-2H-Atlanta-GA-30305/35943008_zpid/",
+      "address": "3530 Piedmont Rd NE APT 2H, Atlanta, GA 30305",
+      "totalPrice": 395000,
+      "monthlyRent": 2600,
+      "estimatedMonthlyPayment": 3000,
+      "bedrooms": 1,
+      "bathrooms": 1.5,
+      "sqft": 1050
+    },
+    {
+      "id": "property_08",
+      "link": "https://www.zillow.com/homedetails/2870-Pharr-Court-South-NW-NW-2505-2505-Atlanta-GA-30305/456671956_zpid/",
+      "address": "2870 Pharr Court South NW 2505, Atlanta, GA 30305",
+      "totalPrice": 720000,
+      "monthlyRent": 4200,
+      "estimatedMonthlyPayment": 5000,
+      "bedrooms": 3,
+      "bathrooms": 3.5,
+      "sqft": 2100
+    },
+    {
+      "id": "property_09",
+      "link": "https://www.zillow.com/homedetails/3530-Piedmont-Rd-NE-APT-5A-Atlanta-GA-30305/35942952_zpid/",
+      "address": "3530 Piedmont Rd NE APT 5A, Atlanta, GA 30305",
+      "totalPrice": 410000,
+      "monthlyRent": 2650,
+      "estimatedMonthlyPayment": 3050,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1100
+    },
+    {
+      "id": "property_10",
+      "link": "https://www.zillow.com/homedetails/325-E-Paces-Ferry-Rd-NE-APT-1411-Atlanta-GA-30305/451972780_zpid/",
+      "address": "325 E Paces Ferry Rd NE APT 1411, Atlanta, GA 30305",
+      "totalPrice": 890000,
+      "monthlyRent": 5000,
+      "estimatedMonthlyPayment": 6200,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "sqft": 2400
+    },
+    {
+      "id": "property_11",
+      "link": "https://www.zillow.com/homedetails/3475-Oak-Valley-Rd-NE-APT-2350-Atlanta-GA-30326/451955113_zpid/",
+      "address": "3475 Oak Valley Rd NE APT 2350, Atlanta, GA 30326",
+      "totalPrice": 465000,
+      "monthlyRent": 2900,
+      "estimatedMonthlyPayment": 3350,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1250
+    },
+    {
+      "id": "property_12",
+      "link": "https://www.zillow.com/homedetails/2870-Pharr-Ct-S-NW-1608-Atlanta-GA-30305/450105239_zpid/",
+      "address": "2870 Pharr Ct S NW 1608, Atlanta, GA 30305",
+      "totalPrice": 550000,
+      "monthlyRent": 3300,
+      "estimatedMonthlyPayment": 3850,
+      "bedrooms": 2,
+      "bathrooms": 2.5,
+      "sqft": 1450
+    },
+    {
+      "id": "property_13",
+      "link": "https://www.zillow.com/homedetails/3475-Oak-Valley-Rd-NE-APT-910-Atlanta-GA-30326/35928288_zpid/",
+      "address": "3475 Oak Valley Rd NE APT 910, Atlanta, GA 30326",
+      "totalPrice": 435000,
+      "monthlyRent": 2750,
+      "estimatedMonthlyPayment": 3150,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "sqft": 1180
+    },
+    {
+      "id": "property_14",
+      "link": "https://www.zillow.com/homedetails/3324-Peachtree-Rd-NE-UNIT-2807-Atlanta-GA-30326/82627533_zpid/",
+      "address": "3324 Peachtree Rd NE UNIT 2807, Atlanta, GA 30326",
+      "totalPrice": 950000,
+      "monthlyRent": 5500,
+      "estimatedMonthlyPayment": 6600,
+      "bedrooms": 3,
+      "bathrooms": 3.5,
+      "sqft": 2600
+    }
+  ]
+}

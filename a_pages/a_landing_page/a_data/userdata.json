@@ -1,0 +1,29 @@
+{
+  "user_1": {
+    "id": 12345,
+    "name": "John Doe",
+    "stays": {
+      "start_date": "2025-12-20",
+      "end_date": "2025-12-27"
+    },
+    "max_price_per_night": 250.00
+  },
+  "user_2": {
+    "id": 67890,
+    "name": "Jane Smith",
+    "stays": {
+      "start_date": "2025-12-10",
+      "end_date": "2025-12-15"
+    },
+    "max_price_per_night": 300.00
+  },
+  "user_3": {
+    "id": 11223,
+    "name": "Alice Johnson",
+    "stays": {
+      "start_date": "2025-12-05",
+      "end_date": "2025-12-12"
+    },
+    "max_price_per_night": 275.00
+  }
+}

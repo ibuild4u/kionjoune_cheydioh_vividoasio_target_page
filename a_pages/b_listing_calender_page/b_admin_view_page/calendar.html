@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Availability Calendar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #0ea5e9;
+      margin: 0;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .nav-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .back-btn {
+      background: #8b5cf6;
+      color: white;
+    }
+    .back-btn:hover {
+      background: #7c3aed;
+    }
+    .home-btn {
+      background: #0ea5e9;
+      color: white;
+    }
+    .home-btn:hover {
+      background: #0284c7;
+    }
+    
+    /* Preference Form */
+    .preference-panel {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .preference-panel h2 {
+      color: #334155;
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group label {
+      font-weight: 600;
+      color: #475569;
+      font-size: 14px;
+    }
+    .form-group input, .form-group select {
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: #0ea5e9;
+    }
+    .checkbox-group {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .btn-generate {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(14,165,233,0.3);
+      transition: all 0.2s;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(14,165,233,0.4);
+    }
+    
+    /* Calendar View */
+    .calendar-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: none;
+    }
+    .calendar-container.active {
+      display: block;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .calendar-header h2 {
+      color: #334155;
+      font-size: 24px;
+    }
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
+    .calendar-nav button {
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .calendar-nav button:hover {
+      background: #e2e8f0;
+    }
+    
+    .month-view {
+      margin-bottom: 30px;
+    }
+    .month-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+    .day-header {
+      text-align: center;
+      font-weight: 700;
+      color: #64748b;
+      padding: 10px;
+      font-size: 12px;
+    }
+    .day-cell {
+      aspect-ratio: 1;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .day-cell:hover {
+      border-color: #0ea5e9;
+      transform: scale(1.05);
+    }
+    .day-cell.empty {
+      border: none;
+      cursor: default;
+    }
+    .day-cell.empty:hover {
+      transform: none;
+    }
+    .day-cell.selected {
+      background: #dbeafe;
+      border-color: #0ea5e9;
+    }
+    .day-cell.available {
+      background: #dcfce7;
+      border-color: #22c55e;
+    }
+    .day-cell.partial {
+      background: #fef9c3;
+      border-color: #eab308;
+    }
+    .day-cell.unavailable {
+      background: #fee2e2;
+      border-color: #ef4444;
+      opacity: 0.6;
+    }
+    .day-cell.today {
+      border: 3px solid #8b5cf6;
+      box-shadow: 0 0 0 2px #c4b5fd;
+    }
+    .day-number {
+      font-weight: 700;
+      color: #334155;
+      font-size: 14px;
+    }
+    .day-cell.today .day-number {
+      color: #8b5cf6;
+      font-weight: 800;
+    }
+    .day-info {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    .legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid;
+    }
+    
+    .property-list {
+      margin-top: 30px;
+    }
+    .property-card {
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #0ea5e9;
+    }
+    .property-card h4 {
+      color: #334155;
+      margin-bottom: 5px;
+    }
+    .property-card p {
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    /* Financial Analysis Panel */
+    .financial-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .financial-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-top: 4px solid #0ea5e9;
+    }
+    .financial-card.positive {
+      border-top-color: #22c55e;
+    }
+    .financial-card.warning {
+      border-top-color: #f59e0b;
+    }
+    .financial-card.negative {
+      border-top-color: #ef4444;
+    }
+    .financial-card h3 {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .financial-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+    .financial-card .subtext {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #22c55e);
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📅 Property Management - Detailed View</h1>
+      <div class="nav-buttons">
+        <button class="back-btn" onclick="window.location.href='dashboard.html'">← Back to Dashboard</button>
+        <button class="home-btn" onclick="window.location.href='../../a_landing_page/index.html'">🏠 Home</button>
+        <button class="home-btn" onclick="window.location.href='../c_user_listing_options_page/available_properties.html'" style="background: #22c55e;">👤 User View</button>
+      </div>
+    </div>
+
+    <!-- Set Nightly Rates for User View -->
+    <div class="preference-panel">
+      <h2>💰 Set Nightly Rates (User View)</h2>
+      <p style="color: #64748b; margin-bottom: 20px;">Set the nightly rates that users will see when browsing properties. These rates determine booking costs.</p>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Select Property</label>
+          <select id="ratePropertySelect">
+            <option value="">-- Select a Property --</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Nightly Rate ($)</label>
+          <input type="number" id="nightlyRate" placeholder="250" min="50" step="10">
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-generate" onclick="saveNightlyRate()">
+          💾 Save Rate
+        </button>
+        <button class="btn-generate" onclick="viewAllRates()" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);">
+          📋 View All Rates
+        </button>
+      </div>
+      
+      <div id="ratesDisplay" style="margin-top: 20px; display: none;">
+        <!-- Rates list will be displayed here -->
+      </div>
+    </div>
+
+    <!-- Property Payoff Tracking -->
+    <div class="preference-panel">
+      <h2>📈 Property Payoff Tracking</h2>
+      <p style="color: #64748b; margin-bottom: 20px;">Track revenue accumulation and payoff progress for each property over time</p>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Select Property</label>
+          <select id="payoffPropertySelect">
+            <option value="">-- Select a Property --</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Ownership Type</label>
+          <select id="ownershipType" onchange="togglePayoffFields()">
+            <option value="owned">🏠 Owned (Mortgage/Cash)</option>
+            <option value="rented">🔑 Rented (Landlord)</option>
+          </select>
+        </div>
+        
+        <div class="form-group" id="purchasePriceGroup">
+          <label>Purchase Price ($)</label>
+          <input type="number" id="purchasePrice" placeholder="525000" min="10000" step="1000" readonly>
+          <small style="color: #64748b; font-size: 12px; margin-top: 4px;">Auto-filled from property data</small>
+        </div>
+        
+        <div class="form-group" id="rentPriceGroup" style="display: none;">
+          <label>Monthly Rent to Landlord ($)</label>
+          <input type="number" id="rentPrice" placeholder="3000" min="100" step="50">
+          <small style="color: #64748b; font-size: 12px; margin-top: 4px;">Your monthly rent payment</small>
+        </div>
+        
+        <div class="form-group" id="downPaymentGroup">
+          <label>Initial Down Payment ($)</label>
+          <input type="number" id="downPayment" placeholder="105000" min="0" step="1000">
+          <small style="color: #64748b; font-size: 12px; margin-top: 4px;">Optional - reduces remaining balance</small>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn-generate" onclick="initializePayoffTracking()">
+          🎯 Start Tracking
+        </button>
+        <button class="btn-generate" onclick="viewPayoffProgress()" style="background: linear-gradient(135deg, #22c55e, #10b981);">
+          📊 View All Progress
+        </button>
+      </div>
+      
+      <div id="payoffDisplay" style="margin-top: 20px; display: none;">
+        <!-- Payoff progress will be displayed here -->
+      </div>
+    </div>
+
+    <!-- View Calendar Form -->
+    <div class="preference-panel">
+      <h2>🎯 View Performance Calendar</h2>
+      <p style="color: #64748b; margin-bottom: 20px;">Select a property to see December 2025 revenue calendar with all bookings displayed</p>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Select Property to Analyze</label>
+          <select id="propertySelect">
+            <option value="">Loading properties...</option>
+          </select>
+        </div>
+      </div>
+      
+      <button class="btn-generate" onclick="generateAvailabilityCalendar()">
+        🔍 View Calendar & Performance
+      </button>
+    </div>
+
+    <!-- Calendar Display -->
+    <div class="calendar-container" id="calendarView">
+      <!-- Financial Analysis Panel -->
+      <div class="financial-panel" id="financialAnalysis" style="display: none;">
+        <!-- Financial cards will be inserted here -->
+      </div>
+      
+      <div class="calendar-header">
+        <h2 id="calendarTitle">Available Dates</h2>
+        <div class="calendar-nav">
+          <button onclick="previousMonth()">← Previous</button>
+          <button onclick="nextMonth()">Next →</button>
+        </div>
+      </div>
+      
+      <div id="calendarContent">
+        <!-- Calendar will be generated here -->
+      </div>
+      
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-box" style="background: #dcfce7; border-color: #22c55e;"></div>
+          <span>Fully Available</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box" style="background: #fef9c3; border-color: #eab308;"></div>
+          <span>Partially Available</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box" style="background: #fee2e2; border-color: #ef4444;"></div>
+          <span>Unavailable</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box" style="background: #dbeafe; border-color: #0ea5e9;"></div>
+          <span>Your Selected Dates</span>
+        </div>
+      </div>
+      
+      <div class="property-list" id="availableProperties">
+        <!-- Matching properties will appear here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let properties = [];
+    let currentMonth = new Date(2025, 11, 1); // December 2025
+    let userPreferences = null;
+    let userBookings = [];
+
+    // Load properties on page load
+    async function loadProperties() {
+      try {
+        const response = await fetch('../a_data/links_info.json');
+        const data = await response.json();
+        properties = data.properties;
+        
+        // Load user bookings
+        await loadUserBookings();
+        
+        // Populate property dropdown
+        const select = document.getElementById('propertySelect');
+        select.innerHTML = '<option value="">-- Select a Property --</option>';
+        properties.forEach((prop, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = `${prop.address.split(',')[0]} - $${prop.totalPrice.toLocaleString()}`;
+          select.appendChild(option);
+        });
+        
+        // Populate rate property dropdown
+        const rateSelect = document.getElementById('ratePropertySelect');
+        rateSelect.innerHTML = '<option value="">-- Select a Property --</option>';
+        properties.forEach((prop, index) => {
+          const option = document.createElement('option');
+          option.value = prop.address;
+          option.textContent = prop.address.split(',')[0];
+          rateSelect.appendChild(option);
+        });
+        
+        // Populate payoff property dropdown
+        const payoffSelect = document.getElementById('payoffPropertySelect');
+        payoffSelect.innerHTML = '<option value="">-- Select a Property --</option>';
+        properties.forEach((prop, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = prop.address.split(',')[0];
+          option.dataset.price = prop.totalPrice;
+          payoffSelect.appendChild(option);
+        });
+        
+        // Add change listener for payoff property selection
+        payoffSelect.addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          if (selectedOption.dataset.price) {
+            document.getElementById('purchasePrice').value = selectedOption.dataset.price;
+          }
+        });
+        
+        // Auto-select property if coming from dashboard
+        const selectedPropertyIndex = localStorage.getItem('selectedPropertyIndex');
+        if (selectedPropertyIndex !== null) {
+          const selectedProperty = properties[parseInt(selectedPropertyIndex)];
+          
+          if (selectedProperty) {
+            // Select the property in all dropdowns
+            select.value = selectedPropertyIndex;
+            payoffSelect.value = selectedPropertyIndex;
+            rateSelect.value = selectedProperty.address;
+            
+            // Show calendar view
+            document.getElementById('calendarView').classList.add('active');
+            
+            // Set current month to December 2025
+            currentMonth = new Date(2025, 11, 1);
+            
+            // Auto-generate calendar and performance for the property
+            renderAdminCalendar([selectedProperty]);
+            calculateMonthlyPerformance([selectedProperty]);
+            
+            // Auto-show rates if any are set
+            setTimeout(() => {
+              const rates = JSON.parse(localStorage.getItem('propertyNightlyRates') || '{}');
+              if (Object.keys(rates).length > 0) {
+                viewAllRates();
+              }
+            }, 300);
+            
+            // Scroll to calendar section
+            setTimeout(() => {
+              document.getElementById('calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 500);
+          }
+          
+          // Clear the selection after using it
+          localStorage.removeItem('selectedPropertyIndex');
+        }
+      } catch (error) {
+        console.error('Error loading properties:', error);
+      }
+    }
+
+    function saveNightlyRate() {
+      const selectedProperty = document.getElementById('ratePropertySelect').value;
+      const rate = parseFloat(document.getElementById('nightlyRate').value);
+      
+      if (!selectedProperty) {
+        alert('⚠️ Please select a property');
+        return;
+      }
+      
+      if (!rate || rate < 50) {
+        alert('⚠️ Please enter a valid nightly rate (minimum $50)');
+        return;
+      }
+      
+      // Get existing rates from localStorage
+      const rates = JSON.parse(localStorage.getItem('propertyNightlyRates') || '{}');
+      
+      // Update rate
+      rates[selectedProperty] = rate;
+      
+      // Save to localStorage
+      localStorage.setItem('propertyNightlyRates', JSON.stringify(rates));
+      
+      // Clear inputs
+      document.getElementById('ratePropertySelect').value = '';
+      document.getElementById('nightlyRate').value = '';
+      
+      alert(`✅ Nightly rate set!\n\n${selectedProperty.split(',')[0]}\n$${rate}/night`);
+    }
+
+    function viewAllRates() {
+      const rates = JSON.parse(localStorage.getItem('propertyNightlyRates') || '{}');
+      const display = document.getElementById('ratesDisplay');
+      
+      if (Object.keys(rates).length === 0) {
+        display.innerHTML = '<p style="color: #64748b; padding: 20px; text-align: center; background: #f8fafc; border-radius: 8px;">No rates set yet. Set nightly rates above to display them here.</p>';
+        display.style.display = 'block';
+        return;
+      }
+      
+      let html = '<h3 style="color: #334155; margin-bottom: 15px;">📋 Current Nightly Rates</h3>';
+      html += '<div style="display: grid; gap: 10px;">';
+      
+      Object.entries(rates).forEach(([address, rate]) => {
+        html += `
+          <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #0ea5e9; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #334155;">${address.split(',')[0]}</strong><br>
+              <span style="color: #64748b; font-size: 13px;">${address.split(',').slice(1).join(',').trim()}</span>
+            </div>
+            <div style="font-size: 20px; font-weight: 700; color: #0ea5e9;">$${rate}/night</div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      display.innerHTML = html;
+      display.style.display = 'block';
+    }
+
+    function togglePayoffFields() {
+      const ownershipType = document.getElementById('ownershipType').value;
+      const purchasePriceGroup = document.getElementById('purchasePriceGroup');
+      const downPaymentGroup = document.getElementById('downPaymentGroup');
+      const rentPriceGroup = document.getElementById('rentPriceGroup');
+      
+      if (ownershipType === 'owned') {
+        purchasePriceGroup.style.display = 'block';
+        downPaymentGroup.style.display = 'block';
+        rentPriceGroup.style.display = 'none';
+      } else {
+        purchasePriceGroup.style.display = 'none';
+        downPaymentGroup.style.display = 'none';
+        rentPriceGroup.style.display = 'block';
+      }
+    }
+
+    function initializePayoffTracking() {
+      const selectedIndex = document.getElementById('payoffPropertySelect').value;
+      const ownershipType = document.getElementById('ownershipType').value;
+      const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+      const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+      const rentPrice = parseFloat(document.getElementById('rentPrice').value) || 0;
+      
+      if (!selectedIndex || selectedIndex === '') {
+        alert('⚠️ Please select a property');
+        return;
+      }
+      
+      if (ownershipType === 'owned') {
+        if (!purchasePrice || purchasePrice <= 0) {
+          alert('⚠️ Invalid purchase price');
+          return;
+        }
+      } else {
+        if (!rentPrice || rentPrice <= 0) {
+          alert('⚠️ Please enter monthly rent amount');
+          return;
+        }
+      }
+      
+      const property = properties[parseInt(selectedIndex)];
+      
+      // Get existing payoff data
+      const payoffData = JSON.parse(localStorage.getItem('propertyPayoffTracking') || '{}');
+      
+      // Initialize or update property tracking
+      payoffData[property.address] = {
+        ownershipType: ownershipType,
+        purchasePrice: ownershipType === 'owned' ? purchasePrice : 0,
+        downPayment: ownershipType === 'owned' ? downPayment : 0,
+        rentPrice: ownershipType === 'rented' ? rentPrice : 0,
+        startDate: new Date().toISOString(),
+        propertyInfo: {
+          address: property.address,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          sqft: property.sqft
+        }
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('propertyPayoffTracking', JSON.stringify(payoffData));
+      
+      // Clear form
+      document.getElementById('payoffPropertySelect').value = '';
+      document.getElementById('purchasePrice').value = '';
+      document.getElementById('downPayment').value = '';
+      document.getElementById('rentPrice').value = '';
+      
+      const alertMessage = ownershipType === 'owned' 
+        ? `✅ Payoff tracking initialized!\n\n${property.address.split(',')[0]}\n🏠 Owned Property\nPurchase: $${purchasePrice.toLocaleString()}\nDown Payment: $${downPayment.toLocaleString()}\nBalance: $${(purchasePrice - downPayment).toLocaleString()}`
+        : `✅ Payoff tracking initialized!\n\n${property.address.split(',')[0]}\n🔑 Rented Property\nMonthly Rent: $${rentPrice.toLocaleString()}\nTrack net profit after rent expenses`;
+      
+      alert(alertMessage);
+      
+      // Auto-show progress
+      viewPayoffProgress();
+      
+      // Auto-select property in calendar dropdown and generate calendar
+      const calendarPropertySelect = document.getElementById('propertySelect');
+      calendarPropertySelect.value = selectedIndex;
+      
+      // Scroll to calendar section
+      setTimeout(() => {
+        const calendarSection = document.getElementById('calendar');
+        if (calendarSection) {
+          calendarSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // Auto-generate calendar
+        generateAvailabilityCalendar();
+      }, 500);
+    }
+
+    function viewPayoffProgress() {
+      const payoffData = JSON.parse(localStorage.getItem('propertyPayoffTracking') || '{}');
+      const display = document.getElementById('payoffDisplay');
+      
+      if (Object.keys(payoffData).length === 0) {
+        display.innerHTML = '<p style="color: #64748b; padding: 20px; text-align: center; background: #f8fafc; border-radius: 8px;">No properties being tracked yet. Initialize tracking above to get started.</p>';
+        display.style.display = 'block';
+        return;
+      }
+      
+      let html = '<h3 style="color: #334155; margin-bottom: 15px;">📊 Property Payoff Progress</h3>';
+      html += '<div style="display: grid; gap: 20px;">';
+      
+      Object.entries(payoffData).forEach(([address, data]) => {
+        // Calculate total revenue from all bookings for this property
+        let totalRevenue = 0;
+        userBookings.forEach(booking => {
+          if (booking.propertyAddress === address) {
+            const nights = Math.ceil((booking.endDate - booking.startDate) / (1000 * 60 * 60 * 24));
+            totalRevenue += nights * booking.pricePerNight;
+          }
+        });
+        
+        const isOwned = data.ownershipType === 'owned';
+        const initialBalance = isOwned ? (data.purchasePrice - data.downPayment) : 0;
+        const totalRentPaid = !isOwned && data.rentPrice ? (Math.ceil((new Date() - new Date(data.startDate)) / (1000 * 60 * 60 * 24 * 30)) * data.rentPrice) : 0;
+        const netProfit = totalRevenue - totalRentPaid;
+        const remainingBalance = isOwned ? (initialBalance - totalRevenue) : 0;
+        const percentPaid = isOwned ? ((totalRevenue / initialBalance) * 100).toFixed(2) : 0;
+        const monthsSinceStart = Math.ceil((new Date() - new Date(data.startDate)) / (1000 * 60 * 60 * 24 * 30));
+        const avgMonthlyRevenue = monthsSinceStart > 0 ? totalRevenue / monthsSinceStart : 0;
+        const monthsToPayoff = isOwned && avgMonthlyRevenue > 0 ? Math.ceil(remainingBalance / avgMonthlyRevenue) : 0;
+        const yearsToPayoff = (monthsToPayoff / 12).toFixed(1);
+        
+        html += `
+          <div style="background: white; padding: 20px; border-radius: 12px; border: 2px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+              <div>
+                <h4 style="color: #334155; margin: 0 0 5px 0;">${address.split(',')[0]}</h4>
+                <p style="color: #64748b; font-size: 13px; margin: 0;">${data.propertyInfo.bedrooms} bed • ${data.propertyInfo.bathrooms} bath • ${data.propertyInfo.sqft} sqft</p>
+                <span style="display: inline-block; margin-top: 5px; padding: 4px 10px; background: ${isOwned ? '#dbeafe' : '#fef3c7'}; color: ${isOwned ? '#1e40af' : '#92400e'}; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                  ${isOwned ? '🏠 Owned' : '🔑 Rented'}
+                </span>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 24px; font-weight: 700; color: ${isOwned ? (remainingBalance <= 0 ? '#22c55e' : '#0ea5e9') : (netProfit > 0 ? '#22c55e' : '#ef4444')};">
+                  ${isOwned ? percentPaid + '%' : '$' + netProfit.toLocaleString()}
+                </div>
+                <div style="font-size: 12px; color: #64748b;">${isOwned ? 'Paid Off' : 'Net Profit'}</div>
+              </div>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                ${isOwned ? `
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Purchase Price</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #334155;">$${data.purchasePrice.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Down Payment</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #22c55e;">$${data.downPayment.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Revenue Collected</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #0ea5e9;">$${totalRevenue.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Remaining Balance</div>
+                    <div style="font-size: 16px; font-weight: 600; color: ${remainingBalance <= 0 ? '#22c55e' : '#ef4444'};">$${Math.max(0, remainingBalance).toLocaleString()}</div>
+                  </div>
+                ` : `
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Monthly Rent</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #ef4444;">$${data.rentPrice.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Total Rent Paid</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #ef4444;">$${totalRentPaid.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Revenue Collected</div>
+                    <div style="font-size: 16px; font-weight: 600; color: #0ea5e9;">$${totalRevenue.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">Net Profit</div>
+                    <div style="font-size: 16px; font-weight: 600; color: ${netProfit >= 0 ? '#22c55e' : '#ef4444'};">$${netProfit.toLocaleString()}</div>
+                  </div>
+                `}
+              </div>
+            </div>
+            
+            ${isOwned ? `
+              <div style="margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                  <span style="font-size: 12px; color: #64748b;">Progress</span>
+                  <span style="font-size: 12px; font-weight: 600; color: #334155;">${Math.min(100, percentPaid)}%</span>
+                </div>
+                <div style="width: 100%; height: 12px; background: #e2e8f0; border-radius: 6px; overflow: hidden;">
+                  <div style="width: ${Math.min(100, percentPaid)}%; height: 100%; background: linear-gradient(90deg, #0ea5e9, #22c55e); transition: width 0.5s ease;"></div>
+                </div>
+              </div>
+            ` : ''}
+            
+            <div style="display: flex; gap: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+              <div style="flex: 1; text-align: center; padding: 10px; background: #f1f5f9; border-radius: 6px;">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 3px;">Avg Monthly Revenue</div>
+                <div style="font-size: 14px; font-weight: 700; color: #334155;">$${avgMonthlyRevenue.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+              </div>
+              <div style="flex: 1; text-align: center; padding: 10px; background: #f1f5f9; border-radius: 6px;">
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 3px;">${isOwned ? 'Projected Payoff' : 'ROI Status'}</div>
+                <div style="font-size: 14px; font-weight: 700; color: #334155;">
+                  ${isOwned 
+                    ? (remainingBalance <= 0 ? '✅ PAID OFF' : (monthsToPayoff > 0 ? `${yearsToPayoff} years` : 'N/A'))
+                    : (netProfit > 0 ? '✅ Profitable' : '⚠️ Loss')
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      display.innerHTML = html;
+      display.style.display = 'block';
+    }
+
+    async function loadUserBookings() {
+      try {
+        // Check localStorage first
+        const savedBookings = localStorage.getItem('adminBookings');
+        if (savedBookings) {
+          const parsed = JSON.parse(savedBookings);
+          userBookings = parsed.map(booking => ({
+            ...booking,
+            startDate: new Date(booking.startDate),
+            endDate: new Date(booking.endDate)
+          }));
+          return;
+        }
+        
+        // Otherwise load from JSON file
+        const response = await fetch('../../a_landing_page/a_data/userdata.json');
+        const data = await response.json();
+        
+        // Convert user data to bookings array
+        userBookings = Object.values(data).map(user => ({
+          id: user.id,
+          name: user.name,
+          startDate: new Date(user.stays.start_date),
+          endDate: new Date(user.stays.end_date),
+          pricePerNight: user.max_price_per_night
+        }));
+        
+        // Save to localStorage
+        saveBookingsToLocalStorage();
+      } catch (error) {
+        console.error('Error loading user bookings:', error);
+        userBookings = [];
+      }
+    }
+
+    function saveBookingsToLocalStorage() {
+      const bookingsToSave = userBookings.map(booking => ({
+        id: booking.id || Date.now(),
+        name: booking.name,
+        startDate: booking.startDate.toISOString().split('T')[0],
+        endDate: booking.endDate.toISOString().split('T')[0],
+        pricePerNight: booking.pricePerNight
+      }));
+      localStorage.setItem('adminBookings', JSON.stringify(bookingsToSave));
+    }
+
+    function generateAvailabilityCalendar() {
+      // Get selected property
+      const selectedIndex = document.getElementById('propertySelect').value;
+      
+      if (!selectedIndex || selectedIndex === '') {
+        alert('Please select a property from the dropdown');
+        return;
+      }
+      
+      // Use the selected property
+      const selectedProperty = properties[parseInt(selectedIndex)];
+      
+      if (!selectedProperty) {
+        alert('Property not found');
+        return;
+      }
+      
+      // Show calendar
+      document.getElementById('calendarView').classList.add('active');
+      currentMonth = new Date(2025, 11, 1); // December 2025
+      renderAdminCalendar([selectedProperty]);
+      calculateMonthlyPerformance([selectedProperty]);
+    }
+
+    function calculateMonthlyPerformance(properties) {
+      if (properties.length === 0) return;
+      
+      // Use first property for calculations
+      const property = properties[0];
+      
+      // Get current displayed month and year
+      const displayMonth = currentMonth.getMonth();
+      const displayYear = currentMonth.getFullYear();
+      const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      // Get days in the displayed month
+      const daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
+      
+      // Calculate revenue from bookings in the displayed month
+      let totalRevenue = 0;
+      let totalNights = 0;
+      
+      userBookings.forEach(booking => {
+        // Check if booking overlaps with the displayed month
+        const monthStart = new Date(displayYear, displayMonth, 1);
+        const monthEnd = new Date(displayYear, displayMonth + 1, 0);
+        
+        // Check if booking overlaps with this month
+        if (booking.startDate <= monthEnd && booking.endDate >= monthStart) {
+          // Calculate overlapping nights
+          const overlapStart = booking.startDate > monthStart ? booking.startDate : monthStart;
+          const overlapEnd = booking.endDate < monthEnd ? booking.endDate : monthEnd;
+          const nights = Math.ceil((overlapEnd - overlapStart) / (1000 * 60 * 60 * 24));
+          
+          if (nights > 0) {
+            totalRevenue += nights * booking.pricePerNight;
+            totalNights += nights;
+          }
+        }
+      });
+      
+      // Financial calculations
+      const monthlyMortgage = property.estimatedMonthlyPayment || 5000;
+      const targetMonthlyRent = property.monthlyRent || 8000;
+      
+      // Performance metrics
+      const metMonthlyGoal = totalRevenue >= monthlyMortgage;
+      const revenueVsGoal = totalRevenue - monthlyMortgage;
+      const performancePercentage = monthlyMortgage > 0 ? ((totalRevenue / monthlyMortgage) * 100).toFixed(1) : 0;
+      
+      // Expected vs actual
+      const expectedRevenue = targetMonthlyRent;
+      const actualRevenue = totalRevenue;
+      const revenueGap = expectedRevenue - actualRevenue;
+      
+      // Occupancy rate (based on actual days in month)
+      const occupancyRate = ((totalNights / daysInMonth) * 100).toFixed(1);
+      const averageNightlyRate = totalNights > 0 ? (totalRevenue / totalNights).toFixed(2) : 0;
+      
+      // Display financial analysis
+      const financialPanel = document.getElementById('financialAnalysis');
+      financialPanel.style.display = 'grid';
+      
+      financialPanel.innerHTML = `
+        <div class="financial-card ${metMonthlyGoal ? 'positive' : 'negative'}">
+          <h3>${monthName} Revenue</h3>
+          <div class="value">$${totalRevenue.toLocaleString()}</div>
+          <div class="subtext">
+            ${metMonthlyGoal 
+              ? `✅ Met goal + $${revenueVsGoal.toLocaleString()} surplus` 
+              : `❌ Missed by $${Math.abs(revenueVsGoal).toLocaleString()}`
+            }
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(performancePercentage, 100)}%"></div>
+          </div>
+          <div class="subtext" style="margin-top: 10px;">
+            Monthly goal: $${monthlyMortgage.toLocaleString()} (${performancePercentage}% achieved)
+          </div>
+        </div>
+        
+        <div class="financial-card">
+          <h3>Occupancy Rate</h3>
+          <div class="value">${occupancyRate}%</div>
+          <div class="subtext">
+            ${totalNights} out of ${daysInMonth} nights booked
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${occupancyRate}%"></div>
+          </div>
+          <div class="subtext" style="margin-top: 10px;">
+            ${daysInMonth - totalNights} nights still available
+          </div>
+        </div>
+        
+        <div class="financial-card ${revenueGap <= 0 ? 'positive' : 'warning'}">
+          <h3>Revenue vs Target</h3>
+          <div class="value">$${actualRevenue.toLocaleString()}</div>
+          <div class="subtext">
+            Target: $${expectedRevenue.toLocaleString()}<br>
+            ${revenueGap <= 0 ? '✅ On track!' : `⚠️ $${revenueGap.toLocaleString()} below target`}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min((actualRevenue / expectedRevenue) * 100, 100)}%"></div>
+          </div>
+          <div class="subtext" style="margin-top: 10px;">
+            ${((actualRevenue / expectedRevenue) * 100).toFixed(1)}% of monthly rent target
+          </div>
+        </div>
+        
+        <div class="financial-card ${metMonthlyGoal ? 'positive' : 'negative'}">
+          <h3>Mortgage Payment Status</h3>
+          <div class="value">$${monthlyMortgage.toLocaleString()}</div>
+          <div class="subtext">
+            Monthly mortgage payment due
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(performancePercentage, 100)}%"></div>
+          </div>
+          <div class="subtext" style="margin-top: 10px;">
+            ${metMonthlyGoal 
+              ? `✅ PAID IN FULL by bookings (+$${revenueVsGoal.toLocaleString()} profit)` 
+              : `❌ SHORT BY $${Math.abs(revenueVsGoal).toLocaleString()} - out of pocket required`
+            }
+          </div>
+        </div>
+        
+        <div class="financial-card ${metMonthlyGoal ? 'positive' : 'negative'}">
+          <h3>Out-of-Pocket Cost</h3>
+          <div class="value" style="color: ${metMonthlyGoal ? '#22c55e' : '#ef4444'};">
+            $${metMonthlyGoal ? '0' : Math.abs(revenueVsGoal).toLocaleString()}
+          </div>
+          <div class="subtext">
+            ${metMonthlyGoal 
+              ? '✅ No additional payment needed' 
+              : `❌ You must pay $${Math.abs(revenueVsGoal).toLocaleString()} to cover mortgage`
+            }
+          </div>
+          <div class="subtext" style="margin-top: 15px;">
+            <strong>Revenue:</strong> $${totalRevenue.toLocaleString()}<br>
+            <strong>Mortgage:</strong> $${monthlyMortgage.toLocaleString()}<br>
+            <strong>Difference:</strong> ${revenueVsGoal >= 0 ? '+' : ''}$${revenueVsGoal.toLocaleString()}
+          </div>
+        </div>
+        
+        <div class="financial-card" style="grid-column: 1 / -1;">
+          <h3>📊 ${monthName} Performance Summary</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
+            <div>
+              <strong style="color: #64748b; font-size: 12px;">PROPERTY</strong>
+              <div style="font-size: 18px; font-weight: 700; color: #334155;">${property.address.split(',')[0]}</div>
+              <div style="font-size: 13px; color: #64748b;">${property.bedrooms} bed • ${property.bathrooms} bath • ${property.sqft} sqft</div>
+            </div>
+            <div>
+              <strong style="color: #64748b; font-size: 12px;">ACTUAL REVENUE</strong>
+              <div style="font-size: 18px; font-weight: 700; color: ${metMonthlyGoal ? '#22c55e' : '#ef4444'};">
+                $${totalRevenue.toLocaleString()}
+              </div>
+              <div style="font-size: 13px; color: #64748b;">
+                ${totalNights} nights @ $${averageNightlyRate}/avg
+              </div>
+            </div>
+            <div>
+              <strong style="color: #64748b; font-size: 12px;">NIGHTS BOOKED</strong>
+              <div style="font-size: 18px; font-weight: 700; color: #334155;">${totalNights}/${daysInMonth}</div>
+              <div style="font-size: 13px; color: #64748b;">${occupancyRate}% occupancy rate</div>
+            </div>
+            <div>
+              <strong style="color: #64748b; font-size: 12px;">MONTHLY PERFORMANCE</strong>
+              <div style="font-size: 18px; font-weight: 700; color: ${metMonthlyGoal ? '#22c55e' : '#ef4444'};">
+                ${metMonthlyGoal ? '✅ MET GOAL' : '❌ UNDER'}
+              </div>
+              <div style="font-size: 13px; color: #64748b;">
+                ${metMonthlyGoal ? `+$${revenueVsGoal.toLocaleString()} surplus` : `$${Math.abs(revenueVsGoal).toLocaleString()} short`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdminCalendar(matchingProperties) {
+      const month = currentMonth.getMonth();
+      const year = currentMonth.getFullYear();
+      const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDayOfWeek = firstDay.getDay();
+      
+      let html = `<div class="month-view">`;
+      html += `<div class="month-title">${monthName} - Admin Revenue View</div>`;
+      html += `<div class="calendar-grid">`;
+      
+      // Day headers
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      days.forEach(day => {
+        html += `<div class="day-header">${day}</div>`;
+      });
+      
+      // Empty cells before first day
+      for (let i = 0; i < startingDayOfWeek; i++) {
+        html += `<div class="day-cell empty"></div>`;
+      }
+      
+      // Day cells
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(year, month, day);
+        const booking = getBookingForDate(currentDate);
+        
+        let className = 'day-cell';
+        let info = '';
+        let priceInfo = '';
+        
+        // Check if this is today
+        const checkDate = new Date(year, month, day);
+        checkDate.setHours(0, 0, 0, 0);
+        if (checkDate.getTime() === today.getTime()) {
+          className += ' today';
+        }
+        
+        if (booking) {
+          className += ' selected';
+          info = booking.name.split(' ')[0];
+          priceInfo = `$${booking.pricePerNight}/night`;
+        } else {
+          className += ' available';
+          info = 'Available';
+          priceInfo = '$0';
+        }
+        
+        html += `
+          <div class="${className}" title="${booking ? `${booking.name}: $${booking.pricePerNight}/night` : 'Available'}">
+            <div class="day-number">${day}</div>
+            <div class="day-info">${info}</div>
+            <div class="day-info" style="font-size: 9px; font-weight: 700; color: ${booking ? '#22c55e' : '#94a3b8'};">${priceInfo}</div>
+          </div>
+        `;
+      }
+      
+      html += `</div></div>`;
+      document.getElementById('calendarContent').innerHTML = html;
+      document.getElementById('calendarTitle').textContent = `Revenue Calendar - ${monthName}`;
+      
+      // Display booking summary
+      displayBookingSummary();
+    }
+
+    function getBookingForDate(date) {
+      // Check if date falls within any user booking
+      for (let booking of userBookings) {
+        if (date >= booking.startDate && date < booking.endDate) {
+          return booking;
+        }
+      }
+      return null;
+    }
+
+    function displayBookingSummary() {
+      const container = document.getElementById('availableProperties');
+      
+      // Get current displayed month
+      const displayMonth = currentMonth.getMonth();
+      const displayYear = currentMonth.getFullYear();
+      const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      // Filter bookings that overlap with the displayed month
+      const monthStart = new Date(displayYear, displayMonth, 1);
+      const monthEnd = new Date(displayYear, displayMonth + 1, 0);
+      
+      const monthBookings = userBookings.filter(booking => {
+        return booking.startDate <= monthEnd && booking.endDate >= monthStart;
+      });
+      
+      if (userBookings.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; padding: 20px; text-align: center;">No bookings found in the system</p>';
+        return;
+      }
+      
+      if (monthBookings.length === 0) {
+        container.innerHTML = `
+          <p style="color: #64748b; padding: 20px; text-align: center; background: #f8fafc; border-radius: 8px;">
+            No bookings for ${monthName}<br>
+            <span style="font-size: 13px; margin-top: 5px; display: inline-block;">Total bookings in system: ${userBookings.length}</span>
+          </p>
+        `;
+        return;
+      }
+      
+      let html = `<h3 style="margin-bottom: 15px; color: #334155;">📊 ${monthName} Bookings (${monthBookings.length})</h3>`;
+      
+      monthBookings.forEach((booking, index) => {
+        // Calculate overlapping nights in this month
+        const overlapStart = booking.startDate > monthStart ? booking.startDate : monthStart;
+        const overlapEnd = booking.endDate < monthEnd ? booking.endDate : monthEnd;
+        const nightsInMonth = Math.ceil((overlapEnd - overlapStart) / (1000 * 60 * 60 * 24));
+        const totalNights = Math.ceil((booking.endDate - booking.startDate) / (1000 * 60 * 60 * 24));
+        const revenueInMonth = booking.pricePerNight * nightsInMonth;
+        
+        // Find the original index in userBookings array
+        const originalIndex = userBookings.findIndex(b => 
+          b.id === booking.id && 
+          b.name === booking.name && 
+          b.startDate.getTime() === booking.startDate.getTime()
+        );
+        
+        const spansMultipleMonths = nightsInMonth < totalNights;
+        
+        html += `
+          <div class="property-card" style="border-left-color: #0ea5e9; position: relative;">
+            <button onclick="removeBooking(${originalIndex})" style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+              🗑️ Remove
+            </button>
+            <h4>${booking.name} (ID: ${booking.id})</h4>
+            ${spansMultipleMonths ? `
+              <div style="background: #fef3c7; padding: 8px; border-radius: 6px; margin-bottom: 10px; border-left: 3px solid #f59e0b;">
+                <span style="color: #92400e; font-size: 12px; font-weight: 600;">⚠️ Multi-month booking</span>
+              </div>
+            ` : ''}
+            <p>
+              <strong>Full Stay:</strong> ${booking.startDate.toLocaleDateString()} → ${booking.endDate.toLocaleDateString()} (${totalNights} nights)<br>
+              ${spansMultipleMonths ? `<strong style="color: #0ea5e9;">In ${monthName}:</strong> ${nightsInMonth} nights<br>` : ''}
+              <strong>Rate:</strong> $${booking.pricePerNight}/night<br>
+              <strong style="color: #22c55e;">Revenue (${monthName}):</strong> $${revenueInMonth.toLocaleString()}
+            </p>
+          </div>
+        `;
+      });
+      
+      html += `
+        <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+          <strong style="color: #075985;">ℹ️ Showing:</strong> 
+          <span style="color: #0c4a6e;">${monthBookings.length} booking${monthBookings.length !== 1 ? 's' : ''} in ${monthName}</span>
+          ${userBookings.length > monthBookings.length ? `
+            <br><span style="color: #64748b; font-size: 13px; margin-top: 5px; display: inline-block;">
+              ${userBookings.length - monthBookings.length} other booking${userBookings.length - monthBookings.length !== 1 ? 's' : ''} in different months
+            </span>
+          ` : ''}
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+
+    function removeBooking(index) {
+      const booking = userBookings[index];
+      const confirm = window.confirm(`🗑️ Remove this booking?\n\nGuest: ${booking.name}\nCheck-in: ${booking.startDate.toLocaleDateString()}\nCheck-out: ${booking.endDate.toLocaleDateString()}\n\nThis action cannot be undone.`);
+      
+      if (!confirm) return;
+      
+      // Remove booking from array
+      userBookings.splice(index, 1);
+      
+      // Save to localStorage
+      saveBookingsToLocalStorage();
+      
+      // Refresh display
+      displayBookingSummary();
+      
+      // Refresh calendar if it's displayed
+      const selectedIndex = document.getElementById('propertySelect').value;
+      if (selectedIndex && selectedIndex !== '') {
+        const selectedProperty = properties[parseInt(selectedIndex)];
+        renderAdminCalendar([selectedProperty]);
+        calculateMonthlyPerformance([selectedProperty]);
+      }
+      
+      alert(`✅ Booking removed successfully!\n\n${booking.name}'s reservation has been deleted.`);
+    }
+
+    function previousMonth() {
+      currentMonth.setMonth(currentMonth.getMonth() - 1);
+      const selectedIndex = document.getElementById('propertySelect').value;
+      if (selectedIndex && selectedIndex !== '') {
+        const selectedProperty = properties[parseInt(selectedIndex)];
+        renderAdminCalendar([selectedProperty]);
+        calculateMonthlyPerformance([selectedProperty]);
+      }
+    }
+
+    function nextMonth() {
+      currentMonth.setMonth(currentMonth.getMonth() + 1);
+      const selectedIndex = document.getElementById('propertySelect').value;
+      if (selectedIndex && selectedIndex !== '') {
+        const selectedProperty = properties[parseInt(selectedIndex)];
+        renderAdminCalendar([selectedProperty]);
+        calculateMonthlyPerformance([selectedProperty]);
+      }
+    }
+
+    // Load data on page load
+    loadProperties();
+  </script>
+</body>
+</html>

@@ -424,6 +424,7 @@
       color:var(--muted);
       display:-webkit-box;
       -webkit-line-clamp:2;
+      line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
     }
@@ -1072,6 +1073,12 @@
       </div>
     </div>
     <div class="brandRight">
+      <button class="primaryBtn" onclick="window.location.href='../b_listing_calender_page/c_user_listing_options_page/available_properties.html'" style="background:linear-gradient(135deg, #22c55e, #10b981);">
+        👤 User View
+      </button>
+      <button class="primaryBtn" onclick="window.location.href='../b_listing_calender_page/b_admin_view_page/dashboard.html'" style="background:linear-gradient(135deg, #8b5cf6, #6366f1);">
+        🏠 Admin View
+      </button>
       <button class="primaryBtn" id="openPortfolioBtn">View Portfolio</button>
     </div>
   </div>
@@ -1121,130 +1128,159 @@
     </div>
   </section>
 
-  <!-- Section 1: Budget & Duration -->
+  <!-- Section 1: Contact & Dates -->
   <section class="section" data-video>
     <video class="video-background" muted loop playsinline>
       <source src="assets/city/city_night_lights.mp4" type="video/mp4">
     </video>
     <div class="content">
       <div class="formCard">
-        <h3>Set Budget</h3>
+        <h3>👋 Let's Get Started</h3>
         
-        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Max Daily Spend</label>
-        <input type="range" min="50" max="1000" step="10" value="200" style="width:100%; margin:10px 0;" oninput="this.nextElementSibling.textContent = '$' + this.value + '/day'">
-        <p style="margin:10px 0; color:var(--muted); font-size:0.85rem;">$200/day</p>
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Your Name</label>
+        <input id="userName" type="text" placeholder="John Smith" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
         
-        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Check-in Date</label>
-        <input type="date" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Email Address</label>
+        <input id="userEmail" type="email" placeholder="john@example.com" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
         
-        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Check-out Date</label>
-        <input type="date" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Phone Number (optional)</label>
+        <input id="userPhone" type="tel" placeholder="+1 (555) 123-4567" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
         
         <button class="nextBtn" style="margin-top:15px;">Next →</button>
       </div>
-      <h2>Establish Your Investment Parameters</h2>
-      <p>Begin your search by defining your timeline and budget to discover premium properties that align with your expectations for exceptional experiences.</p>
+      <h2>Welcome to Vivid Oasis</h2>
+      <p>Start your journey by sharing a bit about yourself. We'll use this information to personalize your property search and get back to you with the best options.</p>
       <ul>
-        <li>Bespoke Date Arrangements</li>
-        <li>Premium Budget Management</li>
-        <li>Strategic Duration Planning</li>
-        <li>Investment Value Optimization</li>
+        <li>Browse curated Atlanta properties</li>
+        <li>Find your perfect stay</li>
+        <li>Get personalized recommendations</li>
+        <li>Easy booking process</li>
       </ul>
     </div>
   </section>
 
-  <!-- Section 2: Choose Intent -->
+  <!-- Section 2: When Are You Staying? -->
   <section class="section" data-video>
     <video class="video-background" muted loop playsinline>
       <source src="assets/city/city_skyline_timelapse.mp4" type="video/mp4">
     </video>
     <div class="content">
       <div class="formCard">
-        <h3>Choose Intent</h3>
-        <label><input type="radio" name="intent" value="adventure"> Adventure</label>
-        <label><input type="radio" name="intent" value="relaxation"> Relaxation</label>
-        <label><input type="radio" name="intent" value="culture"> Culture</label>
-        <button class="nextBtn">Next →</button>
+        <h3>📅 When Are You Staying?</h3>
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Check-in Date</label>
+        <input id="checkInDate" type="date" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Check-out Date</label>
+        <input id="checkOutDate" type="date" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+        
+        <button class="nextBtn" style="margin-top:15px;">Next →</button>
       </div>
-      <h2>Define Your Experience</h2>
-      <p>Select the type of luxury experience you seek. From exhilarating adventures to refined cultural immersion—craft your perfect escape.</p>
+      <h2>Plan Your Stay</h2>
+      <p>Choose your check-in and check-out dates. We'll show you properties available during your travel window with accurate pricing for your entire stay.</p>
       <ul>
-        <li>Exclusive Adventure Experiences</li>
-        <li>Five-Star Relaxation</li>
-        <li>Curated Cultural Discovery</li>
+        <li>Real-time availability</li>
+        <li>Flexible date options</li>
+        <li>Instant booking confirmation</li>
+        <li>Extended stay discounts</li>
       </ul>
     </div>
   </section>
 
-  <!-- Section 3: Select Region -->
+  <!-- Section 3: Budget & Bedrooms -->
   <section class="section" data-video>
     <video class="video-background" muted loop playsinline>
       <source src="assets/oasis/desert_dunes.mp4" type="video/mp4">
     </video>
     <div class="content">
       <div class="formCard">
-        <h3>Select Region</h3>
-        <select style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb;">
-          <option value="coastal">Coastal</option>
-          <option value="mountain">Mountain</option>
-          <option value="desert">Desert</option>
-          <option value="urban">Urban</option>
+        <h3>💰 Budget & Size</h3>
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Max Daily Budget</label>
+        <input id="maxBudget" type="range" min="50" max="1000" step="10" value="250" style="width:100%; margin:10px 0;" oninput="this.nextElementSibling.textContent = '$' + this.value + '/night'">
+        <p style="margin:10px 0; color:var(--muted); font-size:0.85rem;">$250/night</p>
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Minimum Bedrooms</label>
+        <select id="minBedrooms" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+          <option value="">Any</option>
+          <option value="1">1+</option>
+          <option value="2" selected>2+</option>
+          <option value="3">3+</option>
+          <option value="4">4+</option>
         </select>
+        
         <button class="nextBtn" style="margin-top:15px;">Next →</button>
       </div>
-      <h2>Choose Your Destination</h2>
-      <p>From pristine coastal estates to exclusive mountain retreats, select the premier location that matches your sophisticated tastes.</p>
+      <h2>Set Your Budget</h2>
+      <p>Tell us your daily budget and how many bedrooms you need. We'll match you with properties that fit your financial comfort zone and space requirements.</p>
       <ul>
-        <li>Luxury Coastal Resorts</li>
-        <li>Private Mountain Estates</li>
-        <li>Metropolitan Penthouses</li>
-        <li>Elite Desert Retreats</li>
+        <li>Transparent pricing</li>
+        <li>No hidden fees</li>
+        <li>Flexible payment options</li>
+        <li>Best value properties</li>
       </ul>
     </div>
   </section>
 
-  <!-- Section 4: Set Preferences -->
+  <!-- Section 4: Location & Intent -->
   <section class="section" data-video>
     <video class="video-background" muted loop playsinline>
       <source src="assets/oasis/green_field_oasis.mp4" type="video/mp4">
     </video>
     <div class="content">
       <div class="formCard">
-        <h3>Preferences</h3>
-        <label><input type="checkbox"> Quiet Environment</label>
-        <label><input type="checkbox"> Family Friendly</label>
-        <label><input type="checkbox"> Pet Friendly</label>
+        <h3>📍 Location & Purpose</h3>
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">Preferred Region</label>
+        <select id="regionPref" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+          <option value="">Any Location</option>
+          <option value="North Atlanta">North Atlanta</option>
+          <option value="South Atlanta">South Atlanta</option>
+          <option value="East Atlanta">East Atlanta</option>
+          <option value="West Atlanta">West Atlanta</option>
+        </select>
+        
+        <label style="margin-top:10px; font-weight:600; color:var(--ink); font-size:0.9rem;">What's Your Stay For?</label>
+        <select id="intentPref" style="width:100%; padding:10px; border-radius:8px; border:2px solid #e5e7eb; font-size:1rem; margin:5px 0;">
+          <option value="vacation">Vacation</option>
+          <option value="business">Business Trip</option>
+          <option value="relocation">Relocation</option>
+          <option value="other">Other</option>
+        </select>
+        
         <button class="nextBtn" style="margin-top:10px;">Next →</button>
       </div>
-      <h2>Customize Your Amenities</h2>
-      <p>Refine your selection with premium features and world-class amenities designed for discerning guests.</p>
+      <h2>Choose Your Neighborhood</h2>
+      <p>Select your preferred Atlanta area and let us know the purpose of your stay. We'll recommend properties in the best location for your needs.</p>
       <ul>
-        <li>Private & Secluded Settings</li>
-        <li>Luxury Family Accommodations</li>
-        <li>Concierge Pet Services</li>
-        <li>White-Glove Accessibility</li>
+        <li>Local neighborhood guides</li>
+        <li>Transit-friendly locations</li>
+        <li>Safe, verified properties</li>
+        <li>Near attractions & amenities</li>
       </ul>
     </div>
   </section>
 
-  <!-- Section 5: Discover Properties -->
+  <!-- Section 5: Ready to Browse -->
   <section class="section" data-video>
     <video class="video-background" muted loop playsinline>
       <source src="assets/city/city_timelapse_traffic.mp4" type="video/mp4">
     </video>
     <div class="content">
       <div class="formCard">
-        <h3>Ready to Explore?</h3>
-        <p style="margin:0 0 15px 0; color:var(--muted); font-size:0.9rem;">View our curated properties</p>
-        <button class="nextBtn" onclick="document.getElementById('openPortfolioBtn').click();">View Portfolio →</button>
+        <h3>✨ Ready to Explore?</h3>
+        <p style="margin:0 0 15px 0; color:var(--muted); font-size:0.9rem;">Your preferences have been saved! Browse properties that match your needs.</p>
+        <button class="nextBtn" onclick="window.location.href='../b_listing_calender_page/c_user_listing_options_page/available_properties.html'" style="margin-bottom: 10px;">🏠 Browse Properties →</button>
+        <p style="margin:15px 0 5px 0; font-size:0.75rem; color:var(--muted); text-align:center;">Property Owner?</p>
+        <button class="nextBtn" onclick="window.location.href='../b_listing_calender_page/b_admin_view_page/dashboard.html'" style="background: #8b5cf6; font-size:0.85rem;">Admin Dashboard</button>
       </div>
-      <h2>Explore Our Portfolio</h2>
-      <p>Review our exclusive collection of premium properties, meticulously selected to exceed your highest expectations.</p>
+      <h2>Find Your Perfect Stay</h2>
+      <p>Your preferences are all set! Browse our collection of Atlanta properties, compare prices, and book your ideal home away from home.</p>
       <ul>
-        <li>Expertly Curated Selection</li>
-        <li>Immersive Virtual Previews</li>
-        <li>Comprehensive Property Insights</li>
-        <li>Dedicated Concierge Support</li>
+        <li>Handpicked properties</li>
+        <li>Verified listings</li>
+        <li>Instant availability</li>
+        <li>Easy booking process</li>
       </ul>
     </div>
   </section>
@@ -1360,6 +1396,149 @@
         }
       });
     });
+
+    // ========== USER DATA CAPTURE & STORAGE ==========
+    
+    // Load saved user preferences on page load
+    function loadUserPreferences() {
+      const saved = localStorage.getItem('vividOasisUserData');
+      if (saved) {
+        const userData = JSON.parse(saved);
+        
+        // Populate contact info
+        if (userData.user) {
+          const nameInput = document.getElementById('userName');
+          const emailInput = document.getElementById('userEmail');
+          const phoneInput = document.getElementById('userPhone');
+          
+          if (nameInput && userData.user.name) nameInput.value = userData.user.name;
+          if (emailInput && userData.user.email) emailInput.value = userData.user.email;
+          if (phoneInput && userData.user.phone) phoneInput.value = userData.user.phone;
+        }
+        
+        // Populate form fields with saved preferences
+        if (userData.user && userData.user.preferences) {
+          const prefs = userData.user.preferences;
+          
+          // Dates
+          if (prefs.checkInDate) {
+            const checkIn = document.getElementById('checkInDate');
+            if (checkIn) checkIn.value = prefs.checkInDate;
+          }
+          if (prefs.checkOutDate) {
+            const checkOut = document.getElementById('checkOutDate');
+            if (checkOut) checkOut.value = prefs.checkOutDate;
+          }
+          
+          // Budget
+          if (prefs.maxBudget) {
+            const budget = document.getElementById('maxBudget');
+            if (budget) {
+              budget.value = prefs.maxBudget;
+              budget.nextElementSibling.textContent = '$' + prefs.maxBudget + '/night';
+            }
+          }
+          
+          // Bedrooms
+          if (prefs.minBedrooms) {
+            const bedrooms = document.getElementById('minBedrooms');
+            if (bedrooms) bedrooms.value = prefs.minBedrooms;
+          }
+          
+          // Region
+          if (prefs.regionPref) {
+            const region = document.getElementById('regionPref');
+            if (region) region.value = prefs.regionPref;
+          }
+          
+          // Intent
+          if (prefs.intentPref) {
+            const intent = document.getElementById('intentPref');
+            if (intent) intent.value = prefs.intentPref;
+          }
+        }
+        
+        console.log('User preferences loaded:', userData);
+      }
+    }
+    
+    // Save user preferences to localStorage
+    function saveUserPreferences() {
+      const userName = document.getElementById('userName');
+      const userEmail = document.getElementById('userEmail');
+      const userPhone = document.getElementById('userPhone');
+      const checkIn = document.getElementById('checkInDate');
+      const checkOut = document.getElementById('checkOutDate');
+      const maxBudget = document.getElementById('maxBudget');
+      const minBedrooms = document.getElementById('minBedrooms');
+      const regionPref = document.getElementById('regionPref');
+      const intentPref = document.getElementById('intentPref');
+      
+      // Calculate total nights
+      let totalNights = 0;
+      if (checkIn && checkOut && checkIn.value && checkOut.value) {
+        const start = new Date(checkIn.value);
+        const end = new Date(checkOut.value);
+        totalNights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      }
+      
+      const userData = {
+        user: {
+          id: Date.now(),
+          name: userName ? userName.value : '',
+          email: userEmail ? userEmail.value : '',
+          phone: userPhone ? userPhone.value : '',
+          notes: '',
+          preferences: {
+            checkInDate: checkIn ? checkIn.value : '',
+            checkOutDate: checkOut ? checkOut.value : '',
+            totalNights: totalNights,
+            maxBudget: maxBudget ? parseInt(maxBudget.value) : 250,
+            minBedrooms: minBedrooms ? minBedrooms.value : '2',
+            regionPref: regionPref ? regionPref.value : '',
+            intentPref: intentPref ? intentPref.value : 'vacation'
+          },
+          savedAt: new Date().toISOString()
+        }
+      };
+      
+      localStorage.setItem('vividOasisUserData', JSON.stringify(userData));
+      console.log('User preferences saved:', userData);
+      return userData;
+    }
+    
+    // Auto-save on input changes
+    const autoSaveInputs = ['userName', 'userEmail', 'userPhone', 'checkInDate', 'checkOutDate', 'maxBudget', 'minBedrooms', 'regionPref', 'intentPref'];
+    autoSaveInputs.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.addEventListener('change', () => {
+          saveUserPreferences();
+        });
+        // Also save on blur for text inputs
+        if (element.type === 'text' || element.type === 'email' || element.type === 'tel') {
+          element.addEventListener('blur', () => {
+            saveUserPreferences();
+          });
+        }
+      }
+    });
+    
+    // Load preferences on page load
+    loadUserPreferences();
+    
+    // Export function to get user data (for use in other pages)
+    window.getVividOasisUserData = function() {
+      const saved = localStorage.getItem('vividOasisUserData');
+      return saved ? JSON.parse(saved) : null;
+    };
+    
+    // Export function to clear user data
+    window.clearVividOasisUserData = function() {
+      localStorage.removeItem('vividOasisUserData');
+      console.log('User data cleared');
+    };
+    
   </script>
 </body>
 </html>
