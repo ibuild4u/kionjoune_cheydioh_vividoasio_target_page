@@ -1,0 +1,37 @@
+{
+  "properties": [
+    {
+      "id": "property_01",
+      "link": "https://www.zillow.com/homedetails/200-River-Vista-Dr-UNIT-743-Sandy-Springs-GA-30339/112430606_zpid/",
+      "address": "200 River Vista Dr UNIT 743, Sandy Springs, GA 30339",
+      "totalPrice": 369900,
+      "monthlyRent": 2708,
+      "estimatedMonthlyPayment": 367700,
+      "bedrooms": 0,
+      "bathrooms": 2,
+      "sqft": 1172,
+      "propertyType": "Borders US/State Park,Lakefront,River",
+      "yearBuilt": 2010,
+      "lotSize": "",
+      "parking": "",
+      "cooling": "",
+      "heating": "",
+      "amenities": [
+        "Pool",
+        "Fitness Center",
+        "Spa",
+        "Clubhouse",
+        "Dishwasher",
+        "Fireplace",
+        "Balcony",
+        "Patio",
+        "Walk-in Closet",
+        "Central Air",
+        "Garage",
+        "Parking",
+        "Gated Community",
+        "Security"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+/* global.css */
+/* Exported from CSS Template Editor */
+/* Selected modules only */
+/* Theme: White/Garden Minimalist */
+
+:root {
+  --primary: #1f9d55;
+  --primary-dark: #157347;
+  --bg: #ffffff;
+  --bg-soft: #f8faf9;
+  --text: #1a1a1a;
+  --text-muted: #666666;
+  --border: rgba(31, 157, 85, 0.25);
+}
+
+/* ===== module: ui-button ===== */
+.mod--ui-button .btn {
+  padding: 10px 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.mod--ui-button .btn:hover {
+  color: var(--primary-dark);
+  border-bottom-color: var(--primary-dark);
+}
+
+.mod--ui-button .btn--primary,
+.mod--ui-button .btn--secondary {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.mod--ui-button .btn--primary:hover,
+.mod--ui-button .btn--secondary:hover {
+  color: var(--primary-dark);
+  border-bottom-color: var(--primary-dark);
+}
+
+
+/* ===== module: ui-input ===== */
+.mod--ui-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mod--ui-input .input {
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  border-radius: 0;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mod--ui-input .input::placeholder {
+  color: #aaa;
+}
+
+.mod--ui-input .input:focus {
+  outline: none;
+  border-bottom-color: var(--primary-dark);
+  box-shadow: 0 3px 0 0 rgba(21, 115, 71, 0.15);
+}
+
+.mod--ui-input textarea.input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+
+/* ===== module: ui-list ===== */
+.mod--ui-list .list li {
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.mod--ui-list .list li::marker {
+  color: var(--primary);
+}
+

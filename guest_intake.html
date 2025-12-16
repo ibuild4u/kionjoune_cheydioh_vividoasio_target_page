@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find Your Stay — Vivid Oasis</title>
+  <link rel="stylesheet" href="../green.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #1f9d55;
+      --primary-dark: #157347;
+      --bg: #ffffff;
+      --bg-soft: #f8faf9;
+      --card-bg: rgba(31, 157, 85, 0.03);
+      --border: rgba(31, 157, 85, 0.25);
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    /* Hero Section */
+    .hero {
+      min-height: 35vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 20px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center top, rgba(31, 157, 85, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    
+    .admin-link {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    
+    .admin-link:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 300;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+      color: var(--primary);
+    }
+    
+    .hero p {
+      font-size: 1rem;
+      max-width: 500px;
+      color: var(--text-muted);
+    }
+    
+    /* Main Container */
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+    
+    /* Step Indicator */
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.4;
+      transition: opacity 0.3s;
+    }
+    
+    .step.active, .step.completed {
+      opacity: 1;
+    }
+    
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .step.active .step-number,
+    .step.completed .step-number {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    /* Form Card */
+    .form-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .form-card.hidden { display: none; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-title {
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+    
+    .form-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 30px;
+    }
+    
+    /* Form Elements */
+    .date-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 14px 16px;
+      border: none;
+      border-bottom: 2px solid var(--primary);
+      background: white;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-bottom-color: var(--primary-dark);
+      box-shadow: 0 3px 0 0 rgba(21, 115, 71, 0.15);
+    }
+    
+    /* Reason Selection */
+    .reason-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    
+    .reason-option {
+      position: relative;
+    }
+    
+    .reason-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .reason-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      text-align: center;
+    }
+    
+    .reason-option label:hover {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.05);
+    }
+    
+    .reason-option input:checked + label {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.1);
+    }
+    
+    .reason-icon { font-size: 1.8rem; }
+    .reason-text { font-size: 0.8rem; }
+    
+    /* Guest Row */
+    .guest-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    /* Accommodation Type Options */
+    .accommodation-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .accom-option {
+      position: relative;
+    }
+    
+    .accom-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .accom-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      text-align: center;
+    }
+    
+    .accom-option label:hover {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.05);
+    }
+    
+    .accom-option input:checked + label {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.1);
+      box-shadow: 0 0 0 2px rgba(31, 157, 85, 0.2);
+    }
+    
+    .accom-icon { font-size: 1.5rem; }
+    .accom-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .accom-desc { font-size: 0.7rem; color: var(--text-muted); }
+    
+    /* Buttons */
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 30px;
+    }
+    
+    .btn {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--primary);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(31, 157, 85, 0.25);
+    }
+    
+    /* ========== STEP 2: AVAILABLE PROPERTIES ========== */
+    .properties-section {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .properties-section.active { display: block; }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--primary);
+    }
+    
+    .date-summary {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      background: var(--bg-soft);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+    
+    /* Events Impact Notice */
+    .events-impact {
+      background: rgba(31, 157, 85, 0.08);
+      border: 1px solid rgba(31, 157, 85, 0.25);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .events-impact.medium {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    
+    .events-impact.high {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .events-impact-icon { font-size: 1.5rem; }
+    
+    .events-impact-text { flex: 1; }
+    
+    .events-impact-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    
+    .events-impact-detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    /* Properties Grid */
+    .properties-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    
+    .property-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .property-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .property-image {
+      height: 130px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 3rem;
+    }
+    
+    .property-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: white;
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    
+    .property-badge.high-demand {
+      background: var(--accent-orange);
+      color: white;
+    }
+    
+    .property-badge.peak {
+      background: var(--accent-red);
+      color: white;
+    }
+    
+    .property-info { padding: 20px; }
+    
+    .property-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    
+    .property-location {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    
+    .property-specs {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .property-availability {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .avail-badge {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    
+    .avail-badge.avail-full {
+      background: rgba(59, 130, 246, 0.15);
+      color: #1d4ed8;
+    }
+    
+    .avail-badge.avail-room {
+      background: rgba(139, 92, 246, 0.15);
+      color: #7c3aed;
+    }
+    
+    .avail-badge.avail-partial {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+    }
+    
+    .property-card.partial-booking {
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+    
+    .property-card.partial-booking .property-image {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    }
+    
+    /* No properties available */
+    .no-properties {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-soft);
+      border-radius: 16px;
+      border: 1px dashed var(--border);
+    }
+    
+    .no-properties-icon { font-size: 3rem; margin-bottom: 16px; }
+    .no-properties-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    .no-properties-text { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; max-width: 400px; margin-left: auto; margin-right: auto; }
+    
+    .property-pricing {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .price-per-night {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .price-per-night span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+    
+    .price-base {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    
+    .price-total {
+      text-align: right;
+    }
+    
+    .total-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    
+    .total-amount {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    /* ========== STEP 3: BOOKING SUMMARY ========== */
+    .booking-section {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .booking-section.active { display: block; }
+    
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 30px;
+    }
+    
+    @media (max-width: 900px) {
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Events Panel */
+    .events-panel {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    
+    .events-panel-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+    
+    .event-card {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    
+    .event-card:hover {
+      border-color: var(--primary);
+    }
+    
+    .event-date-box {
+      flex-shrink: 0;
+      width: 50px;
+      text-align: center;
+      padding: 8px;
+      background: rgba(31, 157, 85, 0.1);
+      border-radius: 8px;
+    }
+    
+    .event-month {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+    }
+    
+    .event-day {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .event-info { flex: 1; min-width: 0; }
+    
+    .event-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+      color: var(--text);
+    }
+    
+    .event-venue {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .event-impact {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #b45309;
+      margin-top: 6px;
+      display: inline-block;
+    }
+    
+    .event-impact.high {
+      background: rgba(239, 68, 68, 0.15);
+      color: #b91c1c;
+    }
+    
+    /* Summary Panel */
+    .summary-panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: sticky;
+      top: 20px;
+    }
+    
+    .summary-property {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    
+    .summary-property-image {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+    
+    .summary-property-info { flex: 1; }
+    
+    .summary-property-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .booking-type-badge {
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    
+    .booking-type-badge.full {
+      background: rgba(59, 130, 246, 0.15);
+      color: #1d4ed8;
+    }
+    
+    .booking-type-badge.room {
+      background: rgba(139, 92, 246, 0.15);
+      color: #7c3aed;
+    }
+    
+    .room-selector {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .room-selector label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .room-selector select {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: white;
+    }
+    
+    .summary-property-specs {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .summary-dates {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-date {
+      text-align: center;
+      padding: 12px;
+      background: var(--bg-soft);
+      border-radius: 8px;
+    }
+    
+    .summary-date-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    
+    .summary-date-value {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .summary-breakdown { margin-bottom: 20px; }
+    
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 0.9rem;
+    }
+    
+    .breakdown-row.highlight {
+      color: var(--accent-orange);
+    }
+    
+    .breakdown-row.total {
+      border-top: 2px solid var(--border);
+      margin-top: 12px;
+      padding-top: 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    
+    .summary-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .btn-book {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-book:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(31, 157, 85, 0.3);
+    }
+    
+    .btn-back {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-back:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    
+    /* No Events */
+    .no-events {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .date-row, .guest-row, .reason-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .reason-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .steps { gap: 12px; }
+      .step-label { display: none; }
+      .form-card { padding: 24px; }
+      .properties-grid { grid-template-columns: 1fr; }
+      
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <a href="events_calendar_admin.html" class="admin-link">Admin →</a>
+    <h1>Find Your Perfect Stay</h1>
+    <p>Tell us about your trip and we'll match you with the best properties</p>
+  </section>
+  
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Step Indicator -->
+    <div class="steps" id="stepsIndicator">
+      <div class="step active" data-step="1">
+        <div class="step-number">1</div>
+        <span class="step-label">Trip Details</span>
+      </div>
+      <div class="step" data-step="2">
+        <div class="step-number">2</div>
+        <span class="step-label">Choose Property</span>
+      </div>
+      <div class="step" data-step="3">
+        <div class="step-number">3</div>
+        <span class="step-label">Review & Book</span>
+      </div>
+    </div>
+    
+    <!-- ========== STEP 1: Trip Details ========== -->
+    <div class="form-card" id="step1Form">
+      <h2 class="form-title">Plan Your Stay</h2>
+      <p class="form-subtitle">Tell us when you're visiting and what brings you here</p>
+      
+      <div class="date-row">
+        <div class="form-group">
+          <label>Check-in</label>
+          <input type="date" id="checkIn" required>
+        </div>
+        <div class="form-group">
+          <label>Check-out</label>
+          <input type="date" id="checkOut" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>What brings you here?</label>
+      </div>
+      
+      <div class="reason-grid">
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-event" value="event">
+          <label for="reason-event">
+            <span class="reason-icon">🎉</span>
+            <span class="reason-text">Event</span>
+          </label>
+        </div>
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-family" value="family">
+          <label for="reason-family">
+            <span class="reason-icon">👨‍👩‍👧‍👦</span>
+            <span class="reason-text">Family</span>
+          </label>
+        </div>
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-business" value="business">
+          <label for="reason-business">
+            <span class="reason-icon">💼</span>
+            <span class="reason-text">Business</span>
+          </label>
+        </div>
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-vacation" value="vacation">
+          <label for="reason-vacation">
+            <span class="reason-icon">🏖️</span>
+            <span class="reason-text">Vacation</span>
+          </label>
+        </div>
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-relocation" value="relocation">
+          <label for="reason-relocation">
+            <span class="reason-icon">📦</span>
+            <span class="reason-text">Relocation</span>
+          </label>
+        </div>
+        <div class="reason-option">
+          <input type="radio" name="reason" id="reason-other" value="other">
+          <label for="reason-other">
+            <span class="reason-icon">✨</span>
+            <span class="reason-text">Other</span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="form-group" id="otherReasonGroup" style="display: none;">
+        <label>Tell us more</label>
+        <input type="text" id="otherReason" placeholder="What brings you to town?">
+      </div>
+      
+      <div class="guest-row">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="guestName" placeholder="Full name" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="guestEmail" placeholder="your@email.com" required>
+        </div>
+      </div>
+      
+      <div class="guest-row">
+        <div class="form-group">
+          <label>Guests</label>
+          <select id="guests">
+            <option value="1">1 Guest</option>
+            <option value="2" selected>2 Guests</option>
+            <option value="3">3 Guests</option>
+            <option value="4">4 Guests</option>
+            <option value="5">5 Guests</option>
+            <option value="6">6+ Guests</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Bedrooms Needed</label>
+          <select id="bedrooms">
+            <option value="1">1 Bedroom</option>
+            <option value="2" selected>2 Bedrooms</option>
+            <option value="3">3 Bedrooms</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Accommodation Type Preference -->
+      <div class="form-group">
+        <label>Accommodation Type</label>
+        <div class="accommodation-options">
+          <div class="accom-option">
+            <input type="radio" name="accomType" id="accomFull" value="full" checked>
+            <label for="accomFull">
+              <span class="accom-icon">🏠</span>
+              <span class="accom-title">Full Unit</span>
+              <span class="accom-desc">Private entire apartment</span>
+            </label>
+          </div>
+          <div class="accom-option">
+            <input type="radio" name="accomType" id="accomRoom" value="room">
+            <label for="accomRoom">
+              <span class="accom-icon">🛏️</span>
+              <span class="accom-title">Private Room</span>
+              <span class="accom-desc">Shared common areas</span>
+            </label>
+          </div>
+          <div class="accom-option">
+            <input type="radio" name="accomType" id="accomEither" value="either">
+            <label for="accomEither">
+              <span class="accom-icon">✨</span>
+              <span class="accom-title">Either Works</span>
+              <span class="accom-desc">Show me all options</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <div></div>
+        <button class="btn btn-primary" onclick="showAvailableProperties()">See Available Properties →</button>
+      </div>
+    </div>
+    
+    <!-- ========== STEP 2: Available Properties ========== -->
+    <div class="properties-section" id="step2Properties">
+      <div class="section-header">
+        <h2 class="section-title">Available Properties</h2>
+        <div class="date-summary" id="dateSummaryBadge"></div>
+      </div>
+      
+      <!-- Properties Grid -->
+      <div class="properties-grid" id="propertiesGrid"></div>
+      
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+        <div></div>
+      </div>
+    </div>
+    
+    <!-- ========== STEP 3: Booking Summary ========== -->
+    <div class="booking-section" id="step3Booking">
+      <div class="booking-layout">
+        <!-- Events Panel -->
+        <div class="events-panel">
+          <h3 class="events-panel-title">
+            <span>📅</span> Events During Your Stay
+          </h3>
+          
+          <!-- Events Impact Notice (shown in Step 3 after property selection) -->
+          <div class="events-impact" id="eventsImpactNotice" style="display: none; margin-bottom: 16px;">
+            <span class="events-impact-icon">📅</span>
+            <div class="events-impact-text">
+              <div class="events-impact-title" id="eventsImpactTitle"></div>
+              <div class="events-impact-detail" id="eventsImpactDetail"></div>
+            </div>
+          </div>
+          
+          <div class="events-list" id="eventsListContainer"></div>
+        </div>
+        
+        <!-- Summary Panel -->
+        <div class="summary-panel">
+          <div class="summary-property" id="summaryPropertyInfo"></div>
+          <div class="summary-dates" id="summaryDates"></div>
+          <div class="summary-breakdown" id="summaryBreakdown"></div>
+          <div class="summary-actions">
+            <button class="btn-book" onclick="confirmBooking()">Confirm Booking</button>
+            <button class="btn-back" onclick="goToStep(2)">← Choose Different Property</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IndexedDB Database Layer -->
+  <script src="db.js"></script>
+  <!-- Dynamic Pricing Engine -->
+  <script src="pricing-engine.js"></script>
+  <script>
+    // ========== PROPERTY DATA (from links_info.json) ==========
+    // rentableRooms: 0 = full unit only, >0 = individual rooms available
+    const PROPERTIES = [
+      { id: 'river-vista-743', name: 'River Vista UNIT 743', address: '200 River Vista Dr', city: 'Sandy Springs', bedrooms: 2, bathrooms: 2, sqft: 1200, basePrice: 185, roomPrice: 85, rentableRooms: 2, icon: '🏠' },
+      { id: 'roswell-510', name: 'Roswell Rd UNIT 510', address: '3820 Roswell Rd NE', city: 'Atlanta', bedrooms: 3, bathrooms: 2.5, sqft: 1450, basePrice: 225, roomPrice: 0, rentableRooms: 0, icon: '🏢' },
+      { id: 'roswell-505', name: 'Roswell Rd UNIT 505', address: '3235 Roswell Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 1, sqft: 950, basePrice: 165, roomPrice: 75, rentableRooms: 2, icon: '🏠' },
+      { id: 'peachtree-407', name: 'Peachtree UNIT 407', address: '2277 Peachtree Rd NE', city: 'Atlanta', bedrooms: 3, bathrooms: 3, sqft: 1800, basePrice: 275, roomPrice: 95, rentableRooms: 3, icon: '🏢' },
+      { id: 'peachtree-608', name: 'Peachtree APT 608', address: '3334 Peachtree Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 2, sqft: 1150, basePrice: 195, roomPrice: 0, rentableRooms: 0, icon: '🏢' },
+      { id: 'peachtree-902', name: 'Peachtree UNIT 902', address: '3324 Peachtree Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 2.5, sqft: 1550, basePrice: 245, roomPrice: 110, rentableRooms: 2, icon: '🏢' },
+      { id: 'piedmont-2h', name: 'Piedmont APT 2H', address: '3530 Piedmont Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 1.5, sqft: 1050, basePrice: 175, roomPrice: 0, rentableRooms: 0, icon: '🏠' },
+      { id: 'pharr-2505', name: 'Pharr Court 2505', address: '2870 Pharr Court South NW', city: 'Atlanta', bedrooms: 4, bathrooms: 3.5, sqft: 2100, basePrice: 325, roomPrice: 95, rentableRooms: 4, icon: '🏢' },
+      { id: 'piedmont-5a', name: 'Piedmont APT 5A', address: '3530 Piedmont Rd NE', city: 'Atlanta', bedrooms: 1, bathrooms: 2, sqft: 1100, basePrice: 155, roomPrice: 0, rentableRooms: 0, icon: '🏠' },
+      { id: 'paces-ferry-1411', name: 'Paces Ferry APT 1411', address: '325 E Paces Ferry Rd NE', city: 'Atlanta', bedrooms: 3, bathrooms: 3, sqft: 2400, basePrice: 395, roomPrice: 145, rentableRooms: 3, icon: '🏢' },
+      { id: 'oak-valley-2350', name: 'Oak Valley APT 2350', address: '3475 Oak Valley Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 2, sqft: 1250, basePrice: 205, roomPrice: 0, rentableRooms: 0, icon: '🏠' },
+      { id: 'pharr-1608', name: 'Pharr Ct 1608', address: '2870 Pharr Ct S NW', city: 'Atlanta', bedrooms: 2, bathrooms: 2.5, sqft: 1450, basePrice: 235, roomPrice: 105, rentableRooms: 2, icon: '🏢' },
+      { id: 'oak-valley-910', name: 'Oak Valley APT 910', address: '3475 Oak Valley Rd NE', city: 'Atlanta', bedrooms: 2, bathrooms: 2, sqft: 1180, basePrice: 185, roomPrice: 0, rentableRooms: 0, icon: '🏠' },
+      { id: 'peachtree-2807', name: 'Peachtree UNIT 2807', address: '3324 Peachtree Rd NE', city: 'Atlanta', bedrooms: 4, bathrooms: 3.5, sqft: 2600, basePrice: 425, roomPrice: 125, rentableRooms: 4, icon: '🏢' }
+    ];
+    
+    // ========== STATE ==========
+    let currentStep = 1;
+    let selectedProperty = null;
+    let tripData = {};
+    let eventsInRange = [];
+    let pricingMultiplier = 1;
+    let existingBookings = []; // Loaded from IndexedDB
+    
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      
+      document.getElementById('checkIn').min = formatDateInput(tomorrow);
+      document.getElementById('checkIn').value = formatDateInput(tomorrow);
+      document.getElementById('checkOut').min = formatDateInput(nextWeek);
+      document.getElementById('checkOut').value = formatDateInput(nextWeek);
+      
+      // Initialize IndexedDB and load existing bookings
+      try {
+        await initDB();
+        await loadExistingBookings();
+        console.log('✅ Guest intake initialized with IndexedDB');
+      } catch (e) {
+        console.error('DB init error:', e);
+      }
+      
+      // Update checkout min when checkin changes
+      document.getElementById('checkIn').addEventListener('change', (e) => {
+        const nextDay = new Date(e.target.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        document.getElementById('checkOut').min = formatDateInput(nextDay);
+      });
+      
+      // Show other reason input
+      document.querySelectorAll('input[name="reason"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          document.getElementById('otherReasonGroup').style.display = 
+            e.target.value === 'other' ? 'block' : 'none';
+        });
+      });
+    });
+    
+    async function loadExistingBookings() {
+      try {
+        existingBookings = await BookingsDB.getAll();
+        console.log('Loaded', existingBookings.length, 'existing bookings from IndexedDB');
+      } catch (e) {
+        console.error('Error loading bookings:', e);
+        existingBookings = [];
+      }
+    }
+    
+    function formatDateInput(date) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    function formatDateDisplay(dateStr) {
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    function formatDateFull(dateStr) {
+      return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+    
+    // ========== STEP NAVIGATION ==========
+    function goToStep(step) {
+      currentStep = step;
+      
+      // Update step indicators
+      document.querySelectorAll('.step').forEach(s => {
+        const stepNum = parseInt(s.dataset.step);
+        s.classList.remove('active', 'completed');
+        if (stepNum < step) s.classList.add('completed');
+        if (stepNum === step) s.classList.add('active');
+      });
+      
+      // Show/hide sections
+      document.getElementById('step1Form').classList.toggle('hidden', step !== 1);
+      document.getElementById('step2Properties').classList.toggle('active', step === 2);
+      document.getElementById('step3Booking').classList.toggle('active', step === 3);
+      
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+    
+    // ========== STEP 1 → STEP 2 ==========
+    function showAvailableProperties() {
+      const checkIn = document.getElementById('checkIn').value;
+      const checkOut = document.getElementById('checkOut').value;
+      const reason = document.querySelector('input[name="reason"]:checked')?.value;
+      const guests = document.getElementById('guests').value;
+      const bedrooms = document.getElementById('bedrooms').value;
+      const guestName = document.getElementById('guestName').value.trim();
+      const guestEmail = document.getElementById('guestEmail').value.trim();
+      const accomType = document.querySelector('input[name="accomType"]:checked')?.value || 'full';
+      
+      // Validation
+      if (!guestName) {
+        alert('Please enter your name');
+        return;
+      }
+      if (!guestEmail || !guestEmail.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+      }
+      if (!checkIn || !checkOut) {
+        alert('Please select your check-in and check-out dates');
+        return;
+      }
+      if (new Date(checkOut) <= new Date(checkIn)) {
+        alert('Check-out must be after check-in');
+        return;
+      }
+      if (!reason) {
+        alert('Please tell us what brings you here');
+        return;
+      }
+      
+      // Store trip data
+      tripData = {
+        guestName,
+        guestEmail,
+        checkIn,
+        checkOut,
+        reason,
+        otherReason: document.getElementById('otherReason').value,
+        guests: parseInt(guests),
+        bedrooms: parseInt(bedrooms),
+        accomType, // 'full', 'room', or 'either'
+        nights: Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))
+      };
+      
+      // Generate events for date range (but don't calculate pricing yet - wait for property selection)
+      eventsInRange = generateEventsForDateRange(checkIn, checkOut);
+      
+      // Update UI
+      document.getElementById('dateSummaryBadge').textContent = 
+        `${formatDateDisplay(checkIn)} - ${formatDateDisplay(checkOut)} · ${tripData.nights} nights`;
+      
+      // Hide events impact notice in Step 2 (we don't know which property yet)
+      document.getElementById('eventsImpactNotice').style.display = 'none';
+      
+      // Render properties with availability checking
+      renderProperties(tripData.bedrooms, tripData.accomType);
+      
+      goToStep(2);
+    }
+    
+    function showEventsImpact(events, multiplier) {
+      const notice = document.getElementById('eventsImpactNotice');
+      const majorEvents = events.filter(e => e.impact === 'high');
+      
+      if (events.length === 0) {
+        notice.style.display = 'none';
+        return;
+      }
+      
+      notice.style.display = 'flex';
+      notice.className = 'events-impact';
+      
+      if (majorEvents.length > 0) {
+        notice.classList.add('high');
+      } else if (events.length > 2) {
+        notice.classList.add('medium');
+      }
+      
+      document.getElementById('eventsImpactTitle').textContent = 
+        majorEvents.length > 0 
+          ? `${majorEvents.length} Major Event${majorEvents.length > 1 ? 's' : ''} During Your Stay`
+          : `${events.length} Events Happening Nearby`;
+      
+      const increase = Math.round((multiplier - 1) * 100);
+      document.getElementById('eventsImpactDetail').textContent = 
+        increase > 0 
+          ? `Prices adjusted +${increase}% due to high demand`
+          : 'Standard pricing applies for these dates';
+    }
+    
+    // Initialize pricing engine if available
+    let pricingEngine = null;
+    if (typeof PricingEngine !== 'undefined') {
+      pricingEngine = new PricingEngine();
+    }
+    
+    function calculatePricingMultiplier(events, checkInDate) {
+      // Use full pricing engine if available
+      if (pricingEngine && checkInDate) {
+        const baseRate = 100; // Use normalized base for multiplier calculation
+        const priceResult = pricingEngine.calculatePrice(baseRate, new Date(checkInDate), {
+          events: events.map(e => ({ impact: e.impact })),
+          bookingType: tripData.bookingType || 'full',
+          leadDays: Math.max(0, Math.floor((new Date(checkInDate) - new Date()) / (1000 * 60 * 60 * 24)))
+        });
+        
+        // Store breakdown for display
+        pricingEngine.lastBreakdown = pricingEngine.getFactorBreakdown(priceResult);
+        
+        return priceResult.finalPrice / baseRate;
+      }
+      
+      // Fallback: simple events-only calculation
+      if (events.length === 0) return 1;
+      
+      const majorEvents = events.filter(e => e.impact === 'high').length;
+      const regularEvents = events.filter(e => e.impact === 'medium').length;
+      
+      // Major events add 15% each (max 2), regular events add 5% each (max 3)
+      let multiplier = 1 + (Math.min(majorEvents, 2) * 0.15) + (Math.min(regularEvents, 3) * 0.05);
+      
+      // Cap at 45% increase
+      return Math.min(multiplier, 1.45);
+    }
+    
+    function renderProperties(bedroomsNeeded, accomType) {
+      const grid = document.getElementById('propertiesGrid');
+      
+      // Filter by bedrooms (show properties with >= requested bedrooms)
+      let availableProperties = PROPERTIES.filter(p => p.bedrooms >= bedroomsNeeded);
+      
+      // Check availability for each property and add availability info
+      availableProperties = availableProperties.map(prop => {
+        const availability = checkPropertyAvailability(prop.id, tripData.checkIn, tripData.checkOut);
+        return { ...prop, availability };
+      });
+      
+      // Filter based on accommodation type preference
+      if (accomType === 'full') {
+        availableProperties = availableProperties.filter(p => p.availability.fullAvailable);
+      } else if (accomType === 'room') {
+        availableProperties = availableProperties.filter(p => p.availability.roomsAvailable.length > 0);
+      } else {
+        // 'either' - show all that have any availability
+        availableProperties = availableProperties.filter(p => 
+          p.availability.fullAvailable || p.availability.roomsAvailable.length > 0
+        );
+      }
+      
+      if (availableProperties.length === 0) {
+        grid.innerHTML = `
+          <div class="no-properties">
+            <div class="no-properties-icon">😔</div>
+            <div class="no-properties-title">No Available Properties</div>
+            <div class="no-properties-text">
+              All properties matching your criteria are booked for these dates.
+              Try adjusting your dates or accommodation type.
+            </div>
+            <button class="btn btn-secondary" onclick="goToStep(1)">← Change Dates</button>
+          </div>
+        `;
+        return;
+      }
+      
+      grid.innerHTML = availableProperties.map(prop => {
+        const availability = prop.availability;
+        const showFullUnit = accomType !== 'room' && availability.fullAvailable;
+        const showRooms = accomType !== 'full' && availability.roomsAvailable.length > 0;
+        
+        const basePrice = showFullUnit ? prop.basePrice : prop.roomPrice;
+        const totalPrice = basePrice * tripData.nights;
+        
+        // Build availability badges
+        let availabilityBadges = '';
+        if (showFullUnit) {
+          availabilityBadges += `<span class="avail-badge avail-full">🏠 Full Unit Available</span>`;
+        }
+        if (showRooms) {
+          availabilityBadges += `<span class="avail-badge avail-room">🛏️ ${availability.roomsAvailable.length} Room${availability.roomsAvailable.length > 1 ? 's' : ''} Available</span>`;
+        }
+        if (!availability.fullAvailable && prop.rentableRooms > 0) {
+          availabilityBadges += `<span class="avail-badge avail-partial">Partially booked</span>`;
+        }
+        
+        return `
+          <div class="property-card ${!availability.fullAvailable && showRooms ? 'partial-booking' : ''}" onclick="selectProperty('${prop.id}', ${showFullUnit ? "'full'" : "'room'"})">
+            <div class="property-image">
+              <span>${prop.icon}</span>
+            </div>
+            <div class="property-info">
+              <div class="property-name">${prop.name}</div>
+              <div class="property-location">${prop.address}, ${prop.city}</div>
+              <div class="property-specs">
+                <span>🛏 ${prop.bedrooms} bed</span>
+                <span>🚿 ${prop.bathrooms} bath</span>
+                <span>📐 ${prop.sqft} sqft</span>
+              </div>
+              <div class="property-availability">${availabilityBadges}</div>
+              <div class="property-pricing">
+                <div>
+                  <div class="price-per-night">$${basePrice} <span>/night</span></div>
+                  <div class="price-base">${showFullUnit ? 'Full Unit' : 'Per Room'}</div>
+                </div>
+                <div class="price-total">
+                  <div class="total-label">${tripData.nights} nights total</div>
+                  <div class="total-amount">$${totalPrice.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // ========== AVAILABILITY CHECKING ==========
+    function checkPropertyAvailability(propertyId, checkIn, checkOut) {
+      const prop = PROPERTIES.find(p => p.id === propertyId);
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      
+      // Find overlapping bookings for this property
+      const overlapping = existingBookings.filter(b => {
+        if (b.propertyId !== propertyId) return false;
+        const bCheckIn = new Date(b.checkIn);
+        const bCheckOut = new Date(b.checkOut);
+        return bCheckIn < checkOutDate && bCheckOut > checkInDate;
+      });
+      
+      const result = {
+        fullAvailable: true,
+        roomsAvailable: [],
+        conflicts: overlapping
+      };
+      
+      // If no overlapping bookings, everything is available
+      if (overlapping.length === 0) {
+        result.fullAvailable = true;
+        if (prop && prop.rentableRooms > 0) {
+          result.roomsAvailable = Array.from({length: prop.rentableRooms}, (_, i) => i + 1);
+        }
+        return result;
+      }
+      
+      // Check if any booking is for full unit - blocks everything
+      const hasFullUnitBooking = overlapping.some(b => b.bookingType === 'full');
+      if (hasFullUnitBooking) {
+        result.fullAvailable = false;
+        result.roomsAvailable = [];
+        return result;
+      }
+      
+      // All overlapping are room bookings - full unit no longer available
+      result.fullAvailable = false;
+      
+      // Check which rooms are still free
+      if (prop && prop.rentableRooms > 0) {
+        const bookedRooms = new Set();
+        overlapping.forEach(b => {
+          if (b.roomNumber) bookedRooms.add(b.roomNumber);
+        });
+        
+        for (let i = 1; i <= prop.rentableRooms; i++) {
+          if (!bookedRooms.has(i)) result.roomsAvailable.push(i);
+        }
+      }
+      
+      return result;
+    }
+    
+    // ========== STEP 2 → STEP 3 ==========
+    function selectProperty(propertyId, bookingType = 'full') {
+      selectedProperty = PROPERTIES.find(p => p.id === propertyId);
+      if (!selectedProperty) return;
+      
+      // Store the booking type selection
+      tripData.bookingType = bookingType;
+      
+      // Check availability to get room options if booking a room
+      const availability = checkPropertyAvailability(propertyId, tripData.checkIn, tripData.checkOut);
+      tripData.availableRooms = availability.roomsAvailable;
+      
+      // NOW calculate pricing multiplier based on events and all dynamic factors
+      pricingMultiplier = calculatePricingMultiplier(eventsInRange, tripData.checkIn);
+      
+      renderBookingSummary();
+      goToStep(3);
+    }
+    
+    function renderBookingSummary() {
+      const prop = selectedProperty;
+      const isRoomBooking = tripData.bookingType === 'room';
+      const baseRate = isRoomBooking ? prop.roomPrice : prop.basePrice;
+      const adjustedPrice = Math.round(baseRate * pricingMultiplier);
+      const subtotal = adjustedPrice * tripData.nights;
+      const cleaningFee = isRoomBooking ? 35 : 75;
+      const serviceFee = Math.round(subtotal * 0.12);
+      const total = subtotal + cleaningFee + serviceFee;
+      
+      // Show events impact notice in Step 3 (now that we know the property)
+      showEventsImpact(eventsInRange, pricingMultiplier);
+      
+      // Booking type badge
+      const bookingTypeBadge = isRoomBooking 
+        ? '<span class="booking-type-badge room">🛏️ Private Room</span>'
+        : '<span class="booking-type-badge full">🏠 Full Unit</span>';
+      
+      // Room selector for room bookings
+      const roomSelector = isRoomBooking && tripData.availableRooms.length > 0 ? `
+        <div class="room-selector">
+          <label>Select Room:</label>
+          <select id="roomSelection" onchange="updateRoomSelection()">
+            ${tripData.availableRooms.map(r => `<option value="${r}">Room ${r}</option>`).join('')}
+          </select>
+        </div>
+      ` : '';
+      
+      // Property info
+      document.getElementById('summaryPropertyInfo').innerHTML = `
+        <div class="summary-property-image">${prop.icon}</div>
+        <div class="summary-property-info">
+          <div class="summary-property-name">${prop.name} ${bookingTypeBadge}</div>
+          <div class="summary-property-specs">${prop.bedrooms} bed · ${prop.bathrooms} bath · ${prop.sqft} sqft</div>
+          <div class="summary-property-specs">${prop.address}, ${prop.city}</div>
+          ${roomSelector}
+        </div>
+      `;
+      
+      // Set default room selection
+      if (isRoomBooking && tripData.availableRooms.length > 0) {
+        tripData.roomNumber = tripData.availableRooms[0];
+      }
+      
+      // Dates
+      document.getElementById('summaryDates').innerHTML = `
+        <div class="summary-date">
+          <div class="summary-date-label">Check-in</div>
+          <div class="summary-date-value">${formatDateFull(tripData.checkIn)}</div>
+        </div>
+        <div class="summary-date">
+          <div class="summary-date-label">Check-out</div>
+          <div class="summary-date-value">${formatDateFull(tripData.checkOut)}</div>
+        </div>
+      `;
+      
+      // Breakdown with dynamic pricing factors
+      const priceIncrease = pricingMultiplier > 1;
+      const pricingFactorsHtml = pricingEngine && pricingEngine.lastBreakdown ? 
+        pricingEngine.lastBreakdown
+          .filter(f => f.impact !== 0)
+          .map(f => `
+            <div class="breakdown-row factor" style="font-size: 0.85rem; color: ${f.impact > 0 ? '#059669' : f.impact < 0 ? '#dc2626' : 'var(--text-muted)'};">
+              <span>${f.icon} ${f.name}</span>
+              <span>${f.impact > 0 ? '+' : ''}${f.impact}%</span>
+            </div>
+          `).join('') : '';
+      
+      document.getElementById('summaryBreakdown').innerHTML = `
+        <div class="breakdown-row">
+          <span>$${adjustedPrice} × ${tripData.nights} nights</span>
+          <span>$${subtotal}</span>
+        </div>
+        ${priceIncrease ? `
+        <div class="breakdown-section" style="margin: 8px 0; padding: 8px; background: rgba(31, 157, 85, 0.05); border-radius: 8px;">
+          <div class="breakdown-row highlight" style="margin-bottom: 4px;">
+            <span>📊 Dynamic Pricing (+${Math.round((pricingMultiplier - 1) * 100)}%)</span>
+            <span>Applied</span>
+          </div>
+          ${pricingFactorsHtml}
+        </div>
+        ` : ''}
+        <div class="breakdown-row">
+          <span>Cleaning fee</span>
+          <span>$${cleaningFee}</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Service fee</span>
+          <span>$${serviceFee}</span>
+        </div>
+        <div class="breakdown-row total">
+          <span>Total</span>
+          <span>$${total.toLocaleString()}</span>
+        </div>
+      `;
+      
+      // Events list
+      renderEventsList();
+    }
+    
+    function renderEventsList() {
+      const container = document.getElementById('eventsListContainer');
+      
+      if (eventsInRange.length === 0) {
+        container.innerHTML = '<div class="no-events">No major events during your stay — enjoy the peace! 🌿</div>';
+        return;
+      }
+      
+      container.innerHTML = eventsInRange.map(event => `
+        <div class="event-card">
+          <div class="event-date-box">
+            <div class="event-month">${event.month}</div>
+            <div class="event-day">${event.day}</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">${event.name}</div>
+            <div class="event-venue">📍 ${event.venue}</div>
+            ${event.impact === 'high' ? '<span class="event-impact high">Major Event</span>' : 
+              event.impact === 'medium' ? '<span class="event-impact">Local Event</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // ========== ROOM SELECTION ==========
+    function updateRoomSelection() {
+      const select = document.getElementById('roomSelection');
+      if (select) {
+        tripData.roomNumber = parseInt(select.value);
+      }
+    }
+    
+    // ========== BOOKING CONFIRMATION (IndexedDB) ==========
+    async function confirmBooking() {
+      const isRoomBooking = tripData.bookingType === 'room';
+      const baseRate = isRoomBooking ? selectedProperty.roomPrice : selectedProperty.basePrice;
+      const adjustedRate = Math.round(baseRate * pricingMultiplier);
+      
+      const bookingData = {
+        id: Date.now(),
+        guestName: tripData.guestName,
+        guestEmail: tripData.guestEmail,
+        propertyId: selectedProperty.id,
+        checkIn: tripData.checkIn,
+        checkOut: tripData.checkOut,
+        nights: tripData.nights,
+        reason: tripData.reason,
+        guests: tripData.guests,
+        bookingType: tripData.bookingType, // 'full' or 'room'
+        roomNumber: isRoomBooking ? tripData.roomNumber : null,
+        nightlyRate: adjustedRate,
+        totalPrice: adjustedRate * tripData.nights,
+        events: eventsInRange,
+        pricing: {
+          basePrice: baseRate,
+          adjustedPrice: adjustedRate,
+          multiplier: pricingMultiplier,
+          nights: tripData.nights,
+          factors: pricingEngine?.lastBreakdown || null
+        },
+        pricingFactors: pricingEngine?.lastBreakdown?.reduce((acc, f) => {
+          acc[f.name.toLowerCase().replace(/\s+/g, '_')] = 1 + (f.impact / 100);
+          return acc;
+        }, {}) || null
+      };
+      
+      // Save booking to IndexedDB
+      try {
+        await BookingsDB.save(bookingData);
+        console.log('Booking saved to IndexedDB:', bookingData.id);
+      } catch (e) {
+        console.error('Error saving booking:', e);
+        alert('Error saving booking. Please try again.');
+        return;
+      }
+      
+      // Show confirmation
+      const cleaningFee = isRoomBooking ? 35 : 75;
+      const subtotal = adjustedRate * tripData.nights;
+      const serviceFee = Math.round(subtotal * 0.12);
+      const total = subtotal + cleaningFee + serviceFee;
+      
+      const bookingTypeText = isRoomBooking ? `Room ${tripData.roomNumber}` : 'Full Unit';
+      
+      alert(`Booking Request Submitted!\n\nGuest: ${tripData.guestName}\n${selectedProperty.name} (${bookingTypeText})\n${formatDateFull(tripData.checkIn)} - ${formatDateFull(tripData.checkOut)}\n${tripData.nights} nights\n\nTotal: $${total.toLocaleString()}\n\nWe'll send confirmation to ${tripData.guestEmail}!`);
+    }
+    
+    // ========== EVENT GENERATION ==========
+    function generateEventsForDateRange(startDate, endDate) {
+      const events = [];
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      // Sample events for Atlanta area
+      const eventTemplates = [
+        { name: 'Atlanta Hawks vs Heat', venue: 'State Farm Arena', type: 'sports', impact: 'high' },
+        { name: 'Atlanta United Match', venue: 'Mercedes-Benz Stadium', type: 'sports', impact: 'high' },
+        { name: 'Tech Conference Atlanta', venue: 'Georgia World Congress', type: 'business', impact: 'high' },
+        { name: 'Concert at The Tabernacle', venue: 'The Tabernacle', type: 'music', impact: 'medium' },
+        { name: 'Food & Wine Festival', venue: 'Piedmont Park', type: 'food', impact: 'medium' },
+        { name: 'Buckhead Art Walk', venue: 'Buckhead Village', type: 'art', impact: 'medium' },
+        { name: 'Jazz Night', venue: 'Buckhead Theatre', type: 'music', impact: 'medium' },
+        { name: 'High Museum Exhibition', venue: 'High Museum of Art', type: 'art', impact: 'low' },
+        { name: 'Farmers Market', venue: 'Peachtree Road', type: 'food', impact: 'low' },
+        { name: 'Comedy Show', venue: 'Punchline Comedy Club', type: 'entertainment', impact: 'low' }
+      ];
+      
+      let currentDate = new Date(start);
+      let usedIndexes = new Set();
+      
+      while (currentDate < end) {
+        // 35% chance of event each day
+        if (Math.random() < 0.35 && usedIndexes.size < eventTemplates.length) {
+          let idx;
+          do {
+            idx = Math.floor(Math.random() * eventTemplates.length);
+          } while (usedIndexes.has(idx));
+          
+          usedIndexes.add(idx);
+          const template = eventTemplates[idx];
+          
+          events.push({
+            ...template,
+            date: new Date(currentDate),
+            month: currentDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
+            day: currentDate.getDate()
+          });
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      // Sort by date
+      events.sort((a, b) => a.date - b.date);
+      
+      return events;
+    }
+  </script>
+</body>
+</html>

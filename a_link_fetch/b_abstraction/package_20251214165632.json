@@ -1,0 +1,23 @@
+{
+  "name": "zillow-property-fetcher",
+  "version": "1.0.0",
+  "description": "Fetch and structure Zillow property data",
+  "main": "fetch_properties.js",
+  "scripts": {
+    "fetch": "node fetch_properties.js",
+    "start": "node fetch_properties.js",
+    "install": "npm install puppeteer"
+  },
+  "keywords": [
+    "zillow",
+    "real-estate",
+    "property-data"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^21.11.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}

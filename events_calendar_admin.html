@@ -1,0 +1,3779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events Calendar — Admin View</title>
+  <link rel="stylesheet" href="../green.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #1f9d55;
+      --primary-dark: #157347;
+      --bg: #ffffff;
+      --bg-soft: #f8faf9;
+      --card-bg: #ffffff;
+      --border: rgba(31, 157, 85, 0.25);
+      --border-light: rgba(31, 157, 85, 0.12);
+      --text: #1a1a1a;
+      --text-muted: #666666;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-soft);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--primary);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.1);
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    
+    /* Controls Panel */
+    .controls-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+    }
+    
+    .property-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .control-group label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+    
+    .control-group input,
+    .control-group select {
+      padding: 10px 14px;
+      border: none;
+      border-bottom: 2px solid var(--primary);
+      background: white;
+      color: var(--text);
+      font-size: 0.95rem;
+      min-width: 160px;
+    }
+    
+    .control-group input:focus,
+    .control-group select:focus {
+      outline: none;
+      border-bottom-color: var(--primary-dark);
+    }
+    
+    .control-group select option {
+      background: white;
+      color: var(--text);
+    }
+    
+    /* Calendar Container */
+    .calendar-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    /* Calendar Navigation */
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .calendar-nav h2 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--primary);
+    }
+    
+    .nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .nav-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--primary);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn:hover {
+      background: rgba(31, 157, 85, 0.15);
+      border-color: var(--primary);
+    }
+    
+    /* Calendar Grid */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .calendar-header {
+      display: contents;
+    }
+    
+    .calendar-header-cell {
+      padding: 14px 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      border-bottom: 1px solid var(--border);
+      background: rgba(31, 157, 85, 0.03);
+    }
+    
+    .calendar-day {
+      min-height: 120px;
+      border: 1px solid var(--border-light);
+      border-top: none;
+      border-left: none;
+      padding: 8px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    
+    .calendar-day:nth-child(7n) {
+      border-right: none;
+    }
+    
+    .calendar-day:hover {
+      background: rgba(31, 157, 85, 0.08);
+    }
+    
+    .calendar-day.other-month {
+      opacity: 0.3;
+    }
+    
+    .calendar-day.today {
+      background: rgba(31, 157, 85, 0.1);
+    }
+    
+    .calendar-day.today .day-number {
+      background: var(--primary);
+      color: var(--bg);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .day-number {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
+    /* Events in Calendar */
+    .day-events {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .day-event {
+      font-size: 0.7rem;
+      padding: 4px 6px;
+      border-radius: 4px;
+      background: rgba(31, 157, 85, 0.2);
+      border-left: 3px solid var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .day-event-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .event-distance {
+      font-size: 0.6rem;
+      color: white;
+      background: var(--primary);
+      padding: 1px 5px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    
+    .day-event:hover {
+      background: rgba(31, 157, 85, 0.35);
+      transform: translateX(2px);
+    }
+    
+    .day-event.sports { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
+    .day-event.music { border-left-color: #8b5cf6; background: rgba(139, 92, 246, 0.15); }
+    .day-event.food { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.15); }
+    .day-event.art { border-left-color: #ec4899; background: rgba(236, 72, 153, 0.15); }
+    .day-event.family { border-left-color: #06b6d4; background: rgba(6, 182, 212, 0.15); }
+    
+    .more-events {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      text-align: center;
+      padding: 2px;
+    }
+    
+    /* Event Detail Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--primary);
+    }
+    
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    
+    .modal-close:hover {
+      opacity: 1;
+    }
+    
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .modal-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .modal-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+    
+    .modal-value {
+      font-size: 0.95rem;
+    }
+    
+    .event-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    
+    .event-tag {
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(31, 157, 85, 0.15);
+    }
+    
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: rgba(31, 157, 85, 0.03);
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+    
+    .legend-color.sports { background: #f59e0b; }
+    .legend-color.music { background: #8b5cf6; }
+    .legend-color.food { background: #ef4444; }
+    .legend-color.art { background: #ec4899; }
+    .legend-color.family { background: #06b6d4; }
+    .legend-color.general { background: var(--primary); }
+    .legend-color.booking { background: #3b82f6; }
+
+    /* ========== BOOKINGS PANEL ========== */
+    .bookings-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+
+    /* ========== PROPERTY METRICS PANEL ========== */
+    .metrics-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    
+    .metrics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(31, 157, 85, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .metrics-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      padding: 20px;
+    }
+    
+    .metric-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: box-shadow 0.2s;
+      position: relative;
+    }
+    
+    .metric-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .metric-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .metric-card:hover .metric-card-actions {
+      opacity: 1;
+    }
+    
+    .card-action-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .card-action-btn:hover {
+      background: var(--text-muted);
+    }
+    
+    .card-action-btn.remove:hover {
+      background: #ef4444;
+    }
+    
+    .custom-badge {
+      font-size: 0.65rem;
+      background: var(--primary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    
+    .metric-data-source {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      padding: 6px 8px;
+      background: var(--border-light);
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .source-label {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .source-date {
+      color: var(--text-muted);
+    }
+    
+    .metric-card.goal-met {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.03);
+    }
+    
+    .metric-card.needs-payment {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.03);
+    }
+    
+    .metric-property-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    
+    .metric-property-address {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+    
+    .metric-label {
+      color: var(--text-muted);
+    }
+    
+    .metric-value {
+      font-weight: 600;
+    }
+    
+    .metric-value.positive {
+      color: var(--primary);
+    }
+    
+    .metric-value.negative {
+      color: #ef4444;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-fill.on-track {
+      background: var(--primary);
+    }
+    
+    .progress-fill.behind {
+      background: #f59e0b;
+    }
+    
+    .progress-fill.over {
+      background: #3b82f6;
+    }
+    
+    .metric-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+    
+    .metric-status.surplus {
+      background: rgba(31, 157, 85, 0.15);
+      color: var(--primary);
+    }
+    
+    .metric-status.deficit {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+    
+    .metric-status.breakeven {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+    
+    .metric-section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin: 12px 0 6px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .metric-section-label:first-of-type {
+      margin-top: 8px;
+      padding-top: 0;
+      border-top: none;
+    }
+    
+    .metrics-summary {
+      display: flex;
+      gap: 24px;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: rgba(31, 157, 85, 0.03);
+    }
+    
+    .summary-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .summary-stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    
+    .summary-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Overview Panel */
+    .overview-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .overview-header h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .overview-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Selected Property Header */
+    .selected-property-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 24px 30px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .selected-property-info h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .selected-property-info p {
+      opacity: 0.85;
+      font-size: 0.9rem;
+    }
+    
+    .selected-property-quick-stats {
+      display: flex;
+      gap: 30px;
+    }
+    
+    .quick-stat {
+      text-align: center;
+    }
+    
+    .quick-stat-value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .quick-stat-label {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .bookings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: rgba(59, 130, 246, 0.08);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .bookings-header h2 {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .bookings-count {
+      background: #3b82f6;
+      color: white;
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+    
+    .bookings-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .booking-item {
+      display: grid;
+      grid-template-columns: 180px 200px 140px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.2s;
+    }
+    
+    .booking-item:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+    
+    .booking-guest {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .guest-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .guest-info {
+      min-width: 0;
+    }
+    
+    .guest-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .guest-email {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .booking-property {
+      font-size: 0.85rem;
+    }
+    
+    .booking-property-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    
+    .booking-property-address {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .booking-type-price {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    
+    .booking-type-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .booking-type-label.room {
+      background: rgba(139, 92, 246, 0.15);
+      color: #7c3aed;
+    }
+    
+    .booking-type-label.full {
+      background: rgba(59, 130, 246, 0.15);
+      color: #1d4ed8;
+    }
+    
+    .price-info {
+      font-size: 0.7rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    
+    .price-total {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+    
+    .dynamic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.12));
+      color: #dc2626;
+      margin-left: 6px;
+      cursor: help;
+    }
+    
+    .booking-dates {
+      text-align: center;
+    }
+    
+    .booking-dates-range {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .booking-nights {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    
+    .booking-events {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .booking-event-chip {
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .booking-event-chip:hover {
+      transform: scale(1.05);
+    }
+    
+    .booking-event-chip.sports { background: rgba(245, 158, 11, 0.2); border-left: 2px solid #f59e0b; }
+    .booking-event-chip.music { background: rgba(139, 92, 246, 0.2); border-left: 2px solid #8b5cf6; }
+    .booking-event-chip.food { background: rgba(239, 68, 68, 0.2); border-left: 2px solid #ef4444; }
+    .booking-event-chip.art { background: rgba(236, 72, 153, 0.2); border-left: 2px solid #ec4899; }
+    .booking-event-chip.family { background: rgba(6, 182, 212, 0.2); border-left: 2px solid #06b6d4; }
+    
+    .booking-more-events {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      padding: 3px 6px;
+    }
+    
+    .booking-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .booking-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .booking-btn:hover {
+      border-color: var(--primary);
+      background: rgba(31, 157, 85, 0.1);
+    }
+    
+    .booking-btn.view-events {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+    
+    .booking-btn.view-events:hover {
+      background: #2563eb;
+    }
+    
+    .booking-btn.receipt {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    
+    .booking-btn.receipt:hover {
+      background: var(--primary-dark);
+    }
+    
+    .booking-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .no-bookings {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+    
+    /* Calendar booking markers - spanning stays */
+    .day-booking {
+      font-size: 0.65rem;
+      padding: 3px 6px;
+      background: rgba(59, 130, 246, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #1d4ed8;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+    .day-booking:hover {
+      background: rgba(59, 130, 246, 0.35);
+    }
+    
+    /* Stay start (check-in day) */
+    .day-booking.stay-start {
+      border-radius: 12px 4px 4px 12px;
+      border-left: 3px solid #3b82f6;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.35), rgba(59, 130, 246, 0.15));
+    }
+    
+    /* Stay middle days */
+    .day-booking.stay-mid {
+      border-radius: 0;
+      border-left: none;
+      border-top: 1px dashed rgba(59, 130, 246, 0.4);
+      border-bottom: 1px dashed rgba(59, 130, 246, 0.4);
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Stay end (last night before check-out) */
+    .day-booking.stay-end {
+      border-radius: 4px 12px 12px 4px;
+      border-right: 3px solid #3b82f6;
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.35));
+    }
+    
+    .stay-icon {
+      font-size: 0.5rem;
+      opacity: 0.7;
+    }
+    
+    .guest-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* Booking type indicators */
+    .booking-type-badge {
+      font-size: 0.55rem;
+      font-weight: 700;
+      padding: 1px 3px;
+      border-radius: 3px;
+      margin-right: 2px;
+    }
+    
+    /* Room booking - purple theme */
+    .day-booking.booking-room {
+      background: rgba(139, 92, 246, 0.15);
+      color: #7c3aed;
+    }
+    
+    .day-booking.booking-room.stay-start {
+      border-left-color: #7c3aed;
+      background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1));
+    }
+    
+    .day-booking.booking-room.stay-mid {
+      border-top-color: rgba(139, 92, 246, 0.4);
+      border-bottom-color: rgba(139, 92, 246, 0.4);
+      background: rgba(139, 92, 246, 0.08);
+    }
+    
+    .day-booking.booking-room.stay-end {
+      border-right-color: #7c3aed;
+      background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.3));
+    }
+    
+    .day-booking.booking-room .booking-type-badge {
+      background: rgba(139, 92, 246, 0.2);
+      color: #7c3aed;
+    }
+    
+    /* Full unit booking - blue theme */
+    .day-booking.booking-full .booking-type-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: #1d4ed8;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .calendar-day {
+        min-height: 80px;
+        padding: 4px;
+      }
+      
+      .day-event {
+        font-size: 0.6rem;
+        padding: 2px 4px;
+      }
+      
+      .day-number {
+        font-size: 0.75rem;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .control-group {
+        width: 100%;
+      }
+      
+      .calendar-header-cell {
+        font-size: 0.6rem;
+        padding: 8px 4px;
+      }
+      
+      .calendar-day {
+        min-height: 60px;
+      }
+      
+      .day-events {
+        display: none;
+      }
+      
+      .day-number.has-events::after {
+        content: '';
+        display: block;
+        width: 6px;
+        height: 6px;
+        background: var(--primary);
+        border-radius: 50%;
+        margin: 4px auto 0;
+      }
+    }
+
+    /* Property Management Styles */
+    .property-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .btn-add {
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-add:hover {
+      background: var(--primary-dark);
+    }
+    
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
+    
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    .metric-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+    }
+    
+    .metric-card-btn {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .metric-card-btn:hover {
+      background: rgba(31, 157, 85, 0.1);
+      border-color: var(--primary);
+    }
+    
+    .metric-card-btn.remove {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .metric-card-btn.remove:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+
+    /* Add Property Modal */
+    .property-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    
+    .property-modal.active {
+      display: flex;
+    }
+    
+    .property-modal-content {
+      background: var(--card-bg);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .property-modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: var(--card-bg);
+      z-index: 10;
+    }
+    
+    .property-modal-header h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    
+    .property-modal-body {
+      padding: 24px;
+    }
+    
+    .scrape-section {
+      background: rgba(31, 157, 85, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .scrape-section h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .scrape-input-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .scrape-input-row input {
+      flex: 1;
+    }
+    
+    .scrape-status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    
+    .scrape-status:empty {
+      display: none;
+    }
+    
+    .scrape-loading {
+      color: #3b82f6;
+    }
+    
+    .scrape-success {
+      color: var(--primary);
+    }
+    
+    .scrape-error {
+      color: #ef4444;
+    }
+    
+    .data-history {
+      background: var(--border-light);
+      padding: 12px;
+      border-radius: 8px;
+    }
+    
+    .history-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 0.8rem;
+    }
+    
+    .history-row span:first-child {
+      color: var(--text-muted);
+    }
+    
+    .form-divider {
+      text-align: center;
+      margin: 24px 0;
+      position: relative;
+    }
+    
+    .form-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+    
+    .form-divider span {
+      background: var(--card-bg);
+      padding: 0 16px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      position: relative;
+    }
+    
+    .form-section {
+      margin-bottom: 20px;
+    }
+    
+    .form-section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    .form-grid.three-col {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: var(--bg);
+      transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    .form-group .input-prefix {
+      position: relative;
+    }
+    
+    .form-group .input-prefix input {
+      padding-left: 28px;
+    }
+    
+    .form-group .input-prefix::before {
+      content: '$';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .amenities-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    .amenity-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    
+    .amenity-checkbox input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+    
+    .property-modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: var(--card-bg);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <h1 id="pageTitle">🏠 Property Portfolio</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="loadSampleBookings()" title="Load sample booking data">📥 Load Sample Data</button>
+      <button class="btn btn-secondary" onclick="exportAllData()" title="Export data backup">📤 Export</button>
+      <button class="btn btn-secondary" onclick="importDataFile()" title="Import data backup">📥 Import</button>
+      <button class="btn btn-secondary" onclick="clearAllData()" title="Clear all data">🗑️ Clear</button>
+      <a href="guest_intake.html" class="btn btn-secondary">User View</a>
+      <button class="btn btn-primary" onclick="refreshEvents()" id="refreshEventsBtn" style="display: none;">↻ Refresh Events</button>
+    </div>
+  </header>
+  
+  <!-- Controls Panel -->
+  <div class="controls-panel">
+    <div class="controls-row">
+      <div class="control-group">
+        <label>Property</label>
+        <select id="areaFilter" onchange="onPropertySelect(this.value)">
+          <option value="all">All Properties</option>
+          <option value="river-vista-743">River Vista UNIT 743</option>
+          <option value="roswell-510">Roswell Rd UNIT 510</option>
+          <option value="roswell-505">Roswell Rd UNIT 505</option>
+          <option value="peachtree-407">Peachtree UNIT 407</option>
+          <option value="peachtree-608">Peachtree APT 608</option>
+          <option value="peachtree-902">Peachtree UNIT 902</option>
+          <option value="piedmont-2h">Piedmont APT 2H</option>
+          <option value="pharr-2505">Pharr Court 2505</option>
+          <option value="piedmont-5a">Piedmont APT 5A</option>
+          <option value="paces-ferry-1411">Paces Ferry APT 1411</option>
+          <option value="oak-valley-2350">Oak Valley APT 2350</option>
+          <option value="pharr-1608">Pharr Ct 1608</option>
+          <option value="oak-valley-910">Oak Valley APT 910</option>
+          <option value="peachtree-2807">Peachtree UNIT 2807</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" onclick="clearPropertyFilter()" id="clearFilterBtn" style="display: none;">✕ Clear Filter</button>
+      <!-- Property-specific filters (shown only when property selected) -->
+      <div class="property-filters" id="propertyFilters" style="display: none;">
+        <div class="control-group">
+          <label>Date Range Start</label>
+          <input type="date" id="rangeStart">
+        </div>
+        <div class="control-group">
+          <label>Date Range End</label>
+          <input type="date" id="rangeEnd">
+        </div>
+        <div class="control-group">
+          <label>Event Type</label>
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="sports">Sports</option>
+            <option value="music">Music</option>
+            <option value="food">Food & Drink</option>
+            <option value="art">Art & Culture</option>
+            <option value="family">Family</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Overview Panel (shown by default when no property selected) -->
+  <div class="overview-panel" id="overviewPanel">
+    <div class="overview-header">
+      <h2>📊 Portfolio Overview</h2>
+      <p>Select a property above to view its events calendar and bookings</p>
+    </div>
+    <div class="overview-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0;">
+      <div class="overview-stat" style="background: var(--bg-soft); padding: 16px; border-radius: 8px; text-align: center;">
+        <span class="overview-stat-value" id="overviewTotalBookings" style="display: block; font-size: 2rem; font-weight: 600; color: var(--primary);">0</span>
+        <span class="overview-stat-label" style="font-size: 0.85rem; color: var(--text-muted);">Total Bookings</span>
+      </div>
+      <div class="overview-stat" style="background: var(--bg-soft); padding: 16px; border-radius: 8px; text-align: center;">
+        <span class="overview-stat-value" id="overviewTotalRevenue" style="display: block; font-size: 2rem; font-weight: 600; color: var(--primary);">$0</span>
+        <span class="overview-stat-label" style="font-size: 0.85rem; color: var(--text-muted);">Total Revenue</span>
+      </div>
+      <div class="overview-stat" style="background: var(--bg-soft); padding: 16px; border-radius: 8px; text-align: center;">
+        <span class="overview-stat-value" id="overviewPropertiesBooked" style="display: block; font-size: 2rem; font-weight: 600; color: var(--primary);">0</span>
+        <span class="overview-stat-label" style="font-size: 0.85rem; color: var(--text-muted);">Properties Booked</span>
+      </div>
+    </div>
+    
+    <!-- All Bookings List in Portfolio View -->
+    <div class="overview-bookings" style="margin-top: 24px;">
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 16px;">👥 All Bookings</h3>
+      <div class="bookings-list" id="allBookingsList" style="max-height: 400px; overflow-y: auto;">
+        <div class="no-bookings">No bookings yet. Click "Load Sample Data" to add sample bookings.</div>
+      </div>
+    </div>
+    
+    <div class="property-actions" style="margin-top: 20px;">
+      <button class="btn btn-add" onclick="openAddPropertyModal()">
+        <span>+</span> Add Property
+      </button>
+    </div>
+  </div>
+  
+  <!-- Selected Property Header (shown when property selected) -->
+  <div class="selected-property-header" id="selectedPropertyHeader" style="display: none;">
+    <div class="selected-property-info">
+      <h2 id="selectedPropertyName">Property Name</h2>
+      <p id="selectedPropertyAddress">Address</p>
+    </div>
+    <div class="selected-property-quick-stats">
+      <div class="quick-stat">
+        <span class="quick-stat-value" id="quickStatEvents">0</span>
+        <span class="quick-stat-label">Nearby Events</span>
+      </div>
+      <div class="quick-stat">
+        <span class="quick-stat-value" id="quickStatBookings">0</span>
+        <span class="quick-stat-label">Bookings</span>
+      </div>
+      <div class="quick-stat">
+        <span class="quick-stat-value" id="quickStatIncome">$0</span>
+        <span class="quick-stat-label">Monthly Income</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Calendar Container (hidden by default, shown when property selected) -->
+  <div class="calendar-container" id="calendarContainer" style="display: none;">
+    <!-- Calendar Navigation -->
+    <div class="calendar-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">←</button>
+      <h2 id="currentMonth">December 2025</h2>
+      <button class="nav-btn" onclick="changeMonth(1)">→</button>
+    </div>
+    
+    <!-- Calendar Grid -->
+    <div class="calendar-grid" id="calendarGrid">
+      <!-- Header -->
+      <div class="calendar-header">
+        <div class="calendar-header-cell">Sun</div>
+        <div class="calendar-header-cell">Mon</div>
+        <div class="calendar-header-cell">Tue</div>
+        <div class="calendar-header-cell">Wed</div>
+        <div class="calendar-header-cell">Thu</div>
+        <div class="calendar-header-cell">Fri</div>
+        <div class="calendar-header-cell">Sat</div>
+      </div>
+      <!-- Days filled by JS -->
+    </div>
+    
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color sports"></div> Sports</div>
+      <div class="legend-item"><div class="legend-color music"></div> Music</div>
+      <div class="legend-item"><div class="legend-color food"></div> Food & Drink</div>
+      <div class="legend-item"><div class="legend-color art"></div> Art & Culture</div>
+      <div class="legend-item"><div class="legend-color family"></div> Family</div>
+      <div class="legend-item"><div class="legend-color general"></div> General</div>
+      <div class="legend-item"><div class="legend-color booking"></div> Guest Booking</div>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="totalEvents">0</span>
+        <span class="stat-label">Events in Range</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="totalBookings">0</span>
+        <span class="stat-label">Active Bookings</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="peakDay">-</span>
+        <span class="stat-label">Peak Day</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="topCategory">-</span>
+        <span class="stat-label">Top Category</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bookings Panel (hidden by default, shown when property selected) -->
+  <div class="bookings-panel" id="bookingsPanel" style="display: none;">
+    <div class="bookings-header">
+      <h2>
+        <span>👥</span> Guest Bookings
+        <span class="bookings-count" id="bookingsCount">0</span>
+      </h2>
+      <button class="btn btn-secondary" onclick="loadSampleBookings()">Load Sample Bookings</button>
+    </div>
+    <div class="bookings-list" id="bookingsList">
+      <div class="no-bookings">No bookings yet. Bookings from the user intake form will appear here.</div>
+    </div>
+  </div>
+
+  <!-- Property Payoff Metrics Panel -->
+  <div class="metrics-panel" id="metricsPanel">
+    <div class="metrics-header">
+      <h2>
+        <span>💰</span> Property Payoff Metrics
+      </h2>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Property Value & Payoff Analysis</span>
+    </div>
+    <div class="metrics-summary" id="metricsSummary">
+      <div class="summary-stat">
+        <span class="summary-stat-value" id="totalPortfolioValue">$0</span>
+        <span class="summary-stat-label">Portfolio Value</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-value" id="totalMonthlyGoal">$0</span>
+        <span class="summary-stat-label">Monthly Payments</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-value" id="totalBookingIncome">$0</span>
+        <span class="summary-stat-label">Booking Income</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-value" id="netPosition">$0</span>
+        <span class="summary-stat-label">Net Cash Flow</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-value" id="propertiesOnTrack">0</span>
+        <span class="summary-stat-label">Covering Payments</span>
+      </div>
+    </div>
+    <div class="metrics-grid" id="metricsGrid">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- Event Detail Modal -->
+  <div class="modal" id="eventModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Event Name</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Property Modal -->
+  <div class="property-modal" id="propertyModal">
+    <div class="property-modal-content">
+      <div class="property-modal-header">
+        <h3 id="propertyModalTitle">Add New Property</h3>
+        <button class="modal-close" onclick="closePropertyModal()">×</button>
+      </div>
+      <div class="property-modal-body">
+        <!-- Scrape Section -->
+        <div class="scrape-section">
+          <h4>🔗 Import from Zillow</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Paste a Zillow listing URL to auto-fill property details
+          </p>
+          <div class="scrape-input-row">
+            <input type="url" id="zillowUrl" placeholder="https://www.zillow.com/homedetails/...">
+            <button class="btn btn-primary" onclick="scrapeZillowListing()">Scrape Data</button>
+          </div>
+          <div class="scrape-status" id="scrapeStatus"></div>
+        </div>
+        
+        <div class="form-divider"><span>or enter details manually</span></div>
+        
+        <!-- Basic Info -->
+        <div class="form-section">
+          <div class="form-section-title">📍 Basic Information</div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label>Property Name *</label>
+              <input type="text" id="propName" placeholder="e.g., Peachtree UNIT 407">
+            </div>
+            <div class="form-group full-width">
+              <label>Street Address *</label>
+              <input type="text" id="propAddress" placeholder="e.g., 2277 Peachtree Rd NE">
+            </div>
+            <div class="form-group">
+              <label>City *</label>
+              <input type="text" id="propCity" placeholder="e.g., Atlanta">
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <input type="text" id="propState" value="GA">
+            </div>
+            <div class="form-group">
+              <label>ZIP Code</label>
+              <input type="text" id="propZip" placeholder="e.g., 30309">
+            </div>
+            <div class="form-group">
+              <label>Area</label>
+              <select id="propArea">
+                <option value="buckhead">Buckhead</option>
+                <option value="midtown">Midtown</option>
+                <option value="downtown">Downtown</option>
+                <option value="sandy-springs">Sandy Springs</option>
+                <option value="decatur">Decatur</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Property Details -->
+        <div class="form-section">
+          <div class="form-section-title">🏠 Property Details</div>
+          <div class="form-grid three-col">
+            <div class="form-group">
+              <label>Bedrooms *</label>
+              <input type="number" id="propBedrooms" min="0" step="1" placeholder="2">
+            </div>
+            <div class="form-group">
+              <label>Bathrooms *</label>
+              <input type="number" id="propBathrooms" min="0" step="0.5" placeholder="2">
+            </div>
+            <div class="form-group">
+              <label>Sq Ft</label>
+              <input type="number" id="propSqft" min="0" placeholder="1200">
+            </div>
+            <div class="form-group">
+              <label>Year Built</label>
+              <input type="number" id="propYearBuilt" min="1800" max="2030" placeholder="2005">
+            </div>
+            <div class="form-group">
+              <label>Property Type</label>
+              <select id="propType">
+                <option value="condo">Condo</option>
+                <option value="apartment">Apartment</option>
+                <option value="townhouse">Townhouse</option>
+                <option value="single-family">Single Family</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>HOA Monthly</label>
+              <div class="input-prefix">
+                <input type="number" id="propHoa" min="0" placeholder="350">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Rental Configuration -->
+        <div class="form-section">
+          <div class="form-section-title">🛏️ Rental Configuration</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Configure whether guests can rent individual rooms or the full unit
+          </p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Rentable Rooms</label>
+              <input type="number" id="propRentableRooms" min="0" max="10" placeholder="0" title="Number of rooms available for individual rental (0 = full unit only)">
+            </div>
+            <div class="form-group">
+              <label>Nightly Rate (Full Unit)</label>
+              <div class="input-prefix">
+                <input type="number" id="propNightlyFull" min="0" placeholder="185">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Nightly Rate (Per Room)</label>
+              <div class="input-prefix">
+                <input type="number" id="propNightlyRoom" min="0" placeholder="75">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Max Guests (Full Unit)</label>
+              <input type="number" id="propMaxGuestsFull" min="1" placeholder="6">
+            </div>
+            <div class="form-group">
+              <label>Max Guests (Per Room)</label>
+              <input type="number" id="propMaxGuestsRoom" min="1" placeholder="2">
+            </div>
+          </div>
+          <div class="amenities-grid" style="margin-top: 12px;">
+            <label class="amenity-checkbox"><input type="checkbox" id="amenSharedSpaces"> Shared Kitchen/Living Areas</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenPrivateBath"> Private Bathroom per Room</label>
+          </div>
+        </div>
+        
+        <!-- Financial Details -->
+        <div class="form-section">
+          <div class="form-section-title">💰 Financial Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Total Price *</label>
+              <div class="input-prefix">
+                <input type="number" id="propTotalPrice" min="0" placeholder="450000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Down Payment</label>
+              <div class="input-prefix">
+                <input type="number" id="propDownPayment" min="0" placeholder="90000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Est. Monthly Payment *</label>
+              <div class="input-prefix">
+                <input type="number" id="propMonthlyPayment" min="0" placeholder="3200">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Est. Monthly Rent *</label>
+              <div class="input-prefix">
+                <input type="number" id="propMonthlyRent" min="0" placeholder="2800">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Property Taxes (Annual)</label>
+              <div class="input-prefix">
+                <input type="number" id="propTaxes" min="0" placeholder="5400">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Insurance (Annual)</label>
+              <div class="input-prefix">
+                <input type="number" id="propInsurance" min="0" placeholder="1800">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Amenities -->
+        <div class="form-section">
+          <div class="form-section-title">✨ Amenities</div>
+          <div class="amenities-grid">
+            <label class="amenity-checkbox"><input type="checkbox" id="amenPool"> Pool</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenHotTub"> Hot Tub</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenGym"> Gym/Fitness</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenParking"> Parking</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenDoorman"> Doorman/Concierge</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenLaundry"> In-Unit Laundry</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenBalcony"> Balcony/Patio</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenDishwasher"> Dishwasher</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenAC"> Central A/C</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenPets"> Pet Friendly</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenStorage"> Storage</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenElevator"> Elevator</label>
+            <label class="amenity-checkbox"><input type="checkbox" id="amenRooftop"> Rooftop Access</label>
+          </div>
+        </div>
+        
+        <!-- Location/Coordinates -->
+        <div class="form-section">
+          <div class="form-section-title">🗺️ Location (for distance calculations)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" id="propLat" step="0.0001" placeholder="33.8145">
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" id="propLng" step="0.0001" placeholder="-84.3845">
+            </div>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
+            💡 Tip: Search the address on Google Maps, right-click the location, and copy the coordinates
+          </p>
+        </div>
+        
+        <!-- Additional Notes -->
+        <div class="form-section">
+          <div class="form-section-title">📝 Additional Notes</div>
+          <div class="form-group full-width">
+            <textarea id="propNotes" placeholder="Any additional notes about the property..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="property-modal-footer">
+        <button class="btn btn-secondary" onclick="closePropertyModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveProperty()" id="savePropertyBtn">Add Property</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IndexedDB Database Layer -->
+  <script src="db.js"></script>
+  <script>
+    // State
+    let currentDate = new Date();
+    let events = [];
+    let filteredEvents = [];
+    let bookings = [];
+    let editingPropertyId = null;
+    
+    // Property data with full financial info for payoff metrics
+    // rentableRooms: 0 = full unit only, >0 = individual rooms available
+    // nightlyFull: nightly rate for entire unit
+    // nightlyRoom: nightly rate per room
+    let PROPERTIES = {
+      'river-vista-743': { name: 'River Vista UNIT 743', address: '200 River Vista Dr', city: 'Sandy Springs', area: 'sandy-springs', lat: 33.9425, lng: -84.3785, totalPrice: 450000, monthlyRent: 2800, monthlyPayment: 3200, bedrooms: 2, rentableRooms: 2, nightlyFull: 185, nightlyRoom: 85, maxGuestsFull: 6, maxGuestsRoom: 2 },
+      'roswell-510': { name: 'Roswell Rd UNIT 510', address: '3820 Roswell Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8551, lng: -84.3661, totalPrice: 525000, monthlyRent: 3200, monthlyPayment: 3700, bedrooms: 3, rentableRooms: 0, nightlyFull: 225, nightlyRoom: 0, maxGuestsFull: 8, maxGuestsRoom: 0 },
+      'roswell-505': { name: 'Roswell Rd UNIT 505', address: '3235 Roswell Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8455, lng: -84.3645, totalPrice: 380000, monthlyRent: 2500, monthlyPayment: 2900, bedrooms: 2, rentableRooms: 2, nightlyFull: 165, nightlyRoom: 75, maxGuestsFull: 4, maxGuestsRoom: 2 },
+      'peachtree-407': { name: 'Peachtree UNIT 407', address: '2277 Peachtree Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8145, lng: -84.3845, totalPrice: 650000, monthlyRent: 3800, monthlyPayment: 4500, bedrooms: 3, rentableRooms: 3, nightlyFull: 275, nightlyRoom: 95, maxGuestsFull: 8, maxGuestsRoom: 2 },
+      'peachtree-608': { name: 'Peachtree APT 608', address: '3334 Peachtree Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8515, lng: -84.3645, totalPrice: 425000, monthlyRent: 2700, monthlyPayment: 3100, bedrooms: 2, rentableRooms: 0, nightlyFull: 195, nightlyRoom: 0, maxGuestsFull: 4, maxGuestsRoom: 0 },
+      'peachtree-902': { name: 'Peachtree UNIT 902', address: '3324 Peachtree Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8505, lng: -84.3640, totalPrice: 580000, monthlyRent: 3400, monthlyPayment: 4000, bedrooms: 2, rentableRooms: 2, nightlyFull: 245, nightlyRoom: 110, maxGuestsFull: 6, maxGuestsRoom: 2 },
+      'piedmont-2h': { name: 'Piedmont APT 2H', address: '3530 Piedmont Rd NE', city: 'Atlanta', area: 'midtown', lat: 33.8375, lng: -84.3545, totalPrice: 395000, monthlyRent: 2600, monthlyPayment: 3000, bedrooms: 2, rentableRooms: 0, nightlyFull: 175, nightlyRoom: 0, maxGuestsFull: 4, maxGuestsRoom: 0 },
+      'pharr-2505': { name: 'Pharr Court 2505', address: '2870 Pharr Court South NW', city: 'Atlanta', area: 'buckhead', lat: 33.8325, lng: -84.3785, totalPrice: 720000, monthlyRent: 4200, monthlyPayment: 5000, bedrooms: 4, rentableRooms: 4, nightlyFull: 325, nightlyRoom: 95, maxGuestsFull: 10, maxGuestsRoom: 2 },
+      'piedmont-5a': { name: 'Piedmont APT 5A', address: '3530 Piedmont Rd NE', city: 'Atlanta', area: 'midtown', lat: 33.8375, lng: -84.3545, totalPrice: 410000, monthlyRent: 2650, monthlyPayment: 3050, bedrooms: 1, rentableRooms: 0, nightlyFull: 155, nightlyRoom: 0, maxGuestsFull: 2, maxGuestsRoom: 0 },
+      'paces-ferry-1411': { name: 'Paces Ferry APT 1411', address: '325 E Paces Ferry Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8395, lng: -84.3755, totalPrice: 890000, monthlyRent: 5000, monthlyPayment: 6200, bedrooms: 3, rentableRooms: 3, nightlyFull: 395, nightlyRoom: 145, maxGuestsFull: 8, maxGuestsRoom: 2 },
+      'oak-valley-2350': { name: 'Oak Valley APT 2350', address: '3475 Oak Valley Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8425, lng: -84.3620, totalPrice: 465000, monthlyRent: 2900, monthlyPayment: 3350, bedrooms: 2, rentableRooms: 0, nightlyFull: 205, nightlyRoom: 0, maxGuestsFull: 4, maxGuestsRoom: 0 },
+      'pharr-1608': { name: 'Pharr Ct 1608', address: '2870 Pharr Ct S NW', city: 'Atlanta', area: 'buckhead', lat: 33.8325, lng: -84.3785, totalPrice: 550000, monthlyRent: 3300, monthlyPayment: 3850, bedrooms: 2, rentableRooms: 2, nightlyFull: 235, nightlyRoom: 105, maxGuestsFull: 6, maxGuestsRoom: 2 },
+      'oak-valley-910': { name: 'Oak Valley APT 910', address: '3475 Oak Valley Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8425, lng: -84.3620, totalPrice: 435000, monthlyRent: 2750, monthlyPayment: 3150, bedrooms: 2, rentableRooms: 0, nightlyFull: 185, nightlyRoom: 0, maxGuestsFull: 4, maxGuestsRoom: 0 },
+      'peachtree-2807': { name: 'Peachtree UNIT 2807', address: '3324 Peachtree Rd NE', city: 'Atlanta', area: 'buckhead', lat: 33.8505, lng: -84.3640, totalPrice: 950000, monthlyRent: 5500, monthlyPayment: 6600, bedrooms: 4, rentableRooms: 4, nightlyFull: 425, nightlyRoom: 125, maxGuestsFull: 10, maxGuestsRoom: 2 }
+    };
+
+    // Venue coordinates for distance calculations
+    const VENUES = {
+      'State Farm Arena': { lat: 33.7573, lng: -84.3963 },
+      'Mercedes-Benz Stadium': { lat: 33.7553, lng: -84.4006 },
+      'Truist Park': { lat: 33.8907, lng: -84.4677 },
+      'Buckhead Theatre': { lat: 33.8401, lng: -84.3741 },
+      'Woodruff Arts Center': { lat: 33.7902, lng: -84.3851 },
+      'Eddie\'s Attic': { lat: 33.7748, lng: -84.2963 },
+      'Piedmont Park': { lat: 33.7879, lng: -84.3742 },
+      'Ponce City Market': { lat: 33.7723, lng: -84.3654 },
+      'Buckhead Village': { lat: 33.8389, lng: -84.3782 },
+      'Decatur Square': { lat: 33.7748, lng: -84.2963 },
+      'Peachtree Road': { lat: 33.8251, lng: -84.3671 },
+      'High Museum of Art': { lat: 33.7902, lng: -84.3857 },
+      'Castleberry Hill': { lat: 33.7512, lng: -84.4013 },
+      'Georgia Aquarium': { lat: 33.7634, lng: -84.3951 },
+      'Zoo Atlanta': { lat: 33.7327, lng: -84.3693 },
+      'City Springs': { lat: 33.9362, lng: -84.3787 },
+      'Children\'s Museum': { lat: 33.7584, lng: -84.3927 }
+    };
+
+    // Calculate distance between two coordinates (Haversine formula)
+    function calculateDistance(lat1, lng1, lat2, lng2) {
+      const R = 3959; // Earth's radius in miles
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+    
+    // State for selected property
+    let selectedPropertyId = null;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default date range (current month)
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      
+      document.getElementById('rangeStart').value = formatDateForInput(firstDay);
+      document.getElementById('rangeEnd').value = formatDateForInput(lastDay);
+      
+      // Load bookings from localStorage
+      loadBookingsFromStorage();
+      
+      // Load events (but don't show calendar yet)
+      loadEvents();
+      
+      // Show default view (all properties metrics, no calendar)
+      updateViewForSelection(null);
+    });
+    
+    function formatDateForInput(date) {
+      // Use local date components to avoid timezone issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    // ========== BOOKINGS (IndexedDB) ==========
+    async function loadBookingsFromStorage() {
+      try {
+        const dbBookings = await BookingsDB.getAll();
+        if (dbBookings && dbBookings.length > 0) {
+          // Enrich with property objects
+          bookings = dbBookings.map(b => ({
+            ...b,
+            property: PROPERTIES[b.propertyId] || null
+          }));
+          console.log('Loaded', bookings.length, 'bookings from IndexedDB');
+        } else {
+          bookings = [];
+        }
+      } catch (e) {
+        console.error('Error loading bookings:', e);
+        bookings = [];
+      }
+    }
+    
+    async function loadSampleBookings() {
+      // Seed sample bookings into IndexedDB
+      try {
+        const samples = await BookingsDB.seedSample();
+        // Enrich with property objects
+        bookings = samples.map(b => ({
+          ...b,
+          property: PROPERTIES[b.propertyId] || null
+        }));
+        console.log('Loaded', bookings.length, 'sample bookings into IndexedDB');
+        
+        // Show success feedback
+        alert(`✅ Loaded ${bookings.length} sample bookings!`);
+        
+        // Refresh the current view
+        if (selectedPropertyId && selectedPropertyId !== 'all') {
+          updateViewForSelection(selectedPropertyId);
+        } else {
+          // Refresh portfolio overview with all bookings
+          renderPropertyMetrics(null);
+          renderOverviewBookings();
+        }
+      } catch (e) {
+        console.error('Error seeding sample bookings:', e);
+        alert('Error loading sample data: ' + e.message);
+      }
+    }
+
+    // ========== AVAILABILITY CHECKING ==========
+    // Check availability for a property and date range
+    // Returns: { available: bool, options: ['full', 'room'], conflicts: [], availableRooms: [] }
+    function checkAvailability(propertyId, checkIn, checkOut, requestedType = null) {
+      const property = PROPERTIES[propertyId];
+      if (!property) return { available: false, options: [], conflicts: [], availableRooms: [] };
+      
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      
+      // Get all bookings for this property that overlap with the requested dates
+      const overlappingBookings = bookings.filter(b => {
+        if (b.propertyId !== propertyId) return false;
+        const bCheckIn = new Date(b.checkIn);
+        const bCheckOut = new Date(b.checkOut);
+        // Overlap if: booking starts before we checkout AND booking ends after we checkin
+        return bCheckIn < checkOutDate && bCheckOut > checkInDate;
+      });
+      
+      const result = {
+        available: false,
+        options: [],
+        conflicts: overlappingBookings,
+        availableRooms: [],
+        fullUnitAvailable: false,
+        dynamicPricing: {}
+      };
+      
+      // If no overlapping bookings, both options available
+      if (overlappingBookings.length === 0) {
+        result.available = true;
+        result.fullUnitAvailable = true;
+        result.options = ['full'];
+        if (property.rentableRooms > 0) {
+          result.options.push('room');
+          result.availableRooms = Array.from({length: property.rentableRooms}, (_, i) => i + 1);
+        }
+        result.dynamicPricing = calculateDynamicPrice(propertyId, checkIn, checkOut);
+        return result;
+      }
+      
+      // Check if any overlapping booking is for full unit - blocks everything
+      const hasFullUnitBooking = overlappingBookings.some(b => b.bookingType === 'full');
+      if (hasFullUnitBooking) {
+        return result; // Not available at all
+      }
+      
+      // All overlapping bookings are room bookings - check which rooms are free
+      if (property.rentableRooms > 0) {
+        const bookedRooms = new Set();
+        overlappingBookings.forEach(b => {
+          if (b.roomNumber) bookedRooms.add(b.roomNumber);
+        });
+        
+        const freeRooms = [];
+        for (let i = 1; i <= property.rentableRooms; i++) {
+          if (!bookedRooms.has(i)) freeRooms.push(i);
+        }
+        
+        if (freeRooms.length > 0) {
+          result.available = true;
+          result.options = ['room'];
+          result.availableRooms = freeRooms;
+          result.dynamicPricing = calculateDynamicPrice(propertyId, checkIn, checkOut, 'room');
+        }
+      }
+      
+      return result;
+    }
+    
+    // Calculate dynamic pricing based on events and demand
+    function calculateDynamicPrice(propertyId, checkIn, checkOut, bookingType = 'full') {
+      const property = PROPERTIES[propertyId];
+      if (!property) return {};
+      
+      const baseRate = bookingType === 'room' ? property.nightlyRoom : property.nightlyFull;
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+      
+      let totalPrice = 0;
+      let priceBreakdown = [];
+      
+      // Check each night for events that might affect pricing
+      for (let d = new Date(checkInDate); d < checkOutDate; d.setDate(d.getDate() + 1)) {
+        const dateStr = formatDateForInput(d);
+        const dayEvents = filteredEvents.filter(e => e.dateStr === dateStr);
+        
+        let nightRate = baseRate;
+        let multiplier = 1;
+        let reason = 'Base rate';
+        
+        // Apply dynamic pricing based on events
+        if (dayEvents.length > 0) {
+          // Check for major events (sports at nearby venues)
+          const majorEvent = dayEvents.find(e => e.type === 'sports' && e.distance && e.distance < 5);
+          if (majorEvent) {
+            multiplier = 1.5;
+            reason = `Event surge: ${majorEvent.name}`;
+          } else if (dayEvents.length >= 3) {
+            multiplier = 1.25;
+            reason = 'Multiple events nearby';
+          } else if (dayEvents.some(e => e.distance && e.distance < 3)) {
+            multiplier = 1.15;
+            reason = 'Close event proximity';
+          }
+        }
+        
+        // Weekend premium (Fri/Sat)
+        const dayOfWeek = d.getDay();
+        if (dayOfWeek === 5 || dayOfWeek === 6) {
+          multiplier *= 1.1;
+          reason += ' + Weekend';
+        }
+        
+        nightRate = Math.round(baseRate * multiplier);
+        totalPrice += nightRate;
+        priceBreakdown.push({ date: dateStr, rate: nightRate, reason, multiplier });
+      }
+      
+      return {
+        baseRate,
+        nights,
+        totalPrice,
+        averageNightly: Math.round(totalPrice / nights),
+        breakdown: priceBreakdown
+      };
+    }
+
+    // ========== PROPERTY PAYOFF METRICS ==========
+    function renderPropertyMetrics(filterPropertyId = null) {
+      const grid = document.getElementById('metricsGrid');
+      const summarySection = document.getElementById('metricsSummary');
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      // Determine which properties to show
+      const propertiesToShow = filterPropertyId 
+        ? { [filterPropertyId]: PROPERTIES[filterPropertyId] }
+        : PROPERTIES;
+      
+      // Calculate income for each property from bookings this month
+      const propertyIncome = {};
+      Object.keys(propertiesToShow).forEach(id => propertyIncome[id] = 0);
+      
+      bookings.forEach(booking => {
+        const propId = booking.propertyId;
+        if (!propId || !propertiesToShow[propId]) return;
+        
+        const checkIn = new Date(booking.checkIn);
+        const checkOut = new Date(booking.checkOut);
+        
+        // Calculate nights in current month
+        let nightsInMonth = 0;
+        let currentDate = new Date(checkIn);
+        while (currentDate < checkOut) {
+          if (currentDate.getMonth() === currentMonth && currentDate.getFullYear() === currentYear) {
+            nightsInMonth++;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        // Use actual booking nightly rate (or calculate from total if not available)
+        const nightlyRate = booking.nightlyRate || (booking.totalPrice / booking.nights) || 0;
+        propertyIncome[propId] += nightsInMonth * nightlyRate;
+      });
+      
+      // Track summary stats
+      let totalGoal = 0;
+      let totalIncome = 0;
+      let onTrack = 0;
+      
+      const metricsHtml = Object.entries(propertiesToShow).map(([id, prop]) => {
+        const income = propertyIncome[id];
+        const goal = prop.monthlyPayment;
+        const percentage = goal > 0 ? Math.min((income / goal) * 100, 150) : 0;
+        const diff = income - goal;
+        
+        // Calculate payoff metrics
+        const totalPrice = prop.totalPrice;
+        const monthlyRent = prop.monthlyRent;
+        const monthlyPayment = prop.monthlyPayment;
+        const monthlyProfit = income - monthlyPayment; // Current month profit/loss
+        const cashFlow = monthlyRent - monthlyPayment; // Expected cash flow if fully rented
+        const yearsToPayoff = cashFlow > 0 ? (totalPrice / (cashFlow * 12)).toFixed(1) : '∞';
+        const payoffPercent = ((income * 12) / totalPrice * 100).toFixed(2); // Annual payoff rate based on current income
+        const outOfPocket = monthlyPayment - income; // How much owner pays this month
+        
+        totalGoal += goal;
+        totalIncome += income;
+        if (income >= goal) onTrack++;
+        
+        const statusClass = diff >= 0 ? 'surplus' : 'deficit';
+        const cardClass = diff >= 0 ? 'goal-met' : 'needs-payment';
+        const progressClass = percentage >= 100 ? 'over' : percentage >= 60 ? 'on-track' : 'behind';
+        const statusIcon = diff > 0 ? '✓' : diff < 0 ? '⚠' : '=';
+        const statusText = diff > 0 ? `+$${Math.abs(diff).toFixed(0)} surplus` : 
+                          diff < 0 ? `$${Math.abs(diff).toFixed(0)} out of pocket` : 'Breaking even';
+        
+        // Format last updated date
+        const lastUpdated = prop.lastUpdated 
+          ? new Date(prop.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : null;
+        const dataSource = prop.sourceUrl ? 'Zillow Import' : (prop.isCustom ? 'Manual Entry' : 'Original Data');
+        const createdDate = prop.createdAt 
+          ? new Date(prop.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : 'Dec 16, 2025';
+        
+        return `
+          <div class="metric-card ${cardClass}" onclick="openEditPropertyModal('${id}')" style="cursor: pointer;">
+            ${!filterPropertyId ? `
+              <div class="metric-card-actions">
+                <button class="card-action-btn edit" onclick="event.stopPropagation(); openEditPropertyModal('${id}')" title="Edit property">✏️</button>
+                <button class="card-action-btn remove" onclick="event.stopPropagation(); removeProperty('${id}')" title="Remove property">🗑️</button>
+              </div>
+            ` : ''}
+            <div class="metric-property-name">${prop.name}${prop.isCustom ? ' <span class="custom-badge">Custom</span>' : ''}</div>
+            <div class="metric-property-address">${prop.address}</div>
+            <div class="metric-data-source">
+              <span class="source-label">${dataSource}</span>
+              <span class="source-date">${lastUpdated ? `Updated ${lastUpdated}` : `Added ${createdDate}`}</span>
+            </div>
+            
+            <div class="metric-section-label">Property Value</div>
+            <div class="metric-row">
+              <span class="metric-label">Total Price</span>
+              <span class="metric-value">$${totalPrice.toLocaleString()}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Est. Monthly Payment</span>
+              <span class="metric-value">$${monthlyPayment.toLocaleString()}</span>
+            </div>
+            
+            <div class="metric-section-label">This Month</div>
+            <div class="metric-row">
+              <span class="metric-label">Booking Income</span>
+              <span class="metric-value ${income > 0 ? 'positive' : ''}">$${income.toFixed(0)}</span>
+            </div>
+            
+            <div class="progress-bar">
+              <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+            </div>
+            
+            <div class="metric-row">
+              <span class="metric-label">Payment Coverage</span>
+              <span class="metric-value">${percentage.toFixed(0)}%</span>
+            </div>
+            
+            <div class="metric-section-label">Payoff Analysis</div>
+            <div class="metric-row">
+              <span class="metric-label">Annual Payoff Rate</span>
+              <span class="metric-value ${parseFloat(payoffPercent) > 5 ? 'positive' : ''}">${payoffPercent}%</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Est. Years to Payoff</span>
+              <span class="metric-value">${yearsToPayoff} yrs</span>
+            </div>
+            
+            ${prop.nightlyFull ? `
+            <div class="metric-section-label">Rental Config</div>
+            <div class="metric-row">
+              <span class="metric-label">Full Unit Rate</span>
+              <span class="metric-value">$${prop.nightlyFull}/night</span>
+            </div>
+            ${prop.rentableRooms > 0 ? `
+            <div class="metric-row">
+              <span class="metric-label">Rooms Available</span>
+              <span class="metric-value">${prop.rentableRooms} @ $${prop.nightlyRoom}/night</span>
+            </div>
+            ` : `
+            <div class="metric-row">
+              <span class="metric-label">Room Rental</span>
+              <span class="metric-value" style="color: var(--text-muted);">Not available</span>
+            </div>
+            `}
+            ` : ''}
+            
+            <div class="metric-status ${statusClass}">
+              <span>${statusIcon}</span>
+              <span>${statusText}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      grid.innerHTML = metricsHtml || '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No property data available</div>';
+      
+      // Show/hide summary based on filter
+      if (filterPropertyId) {
+        // Single property - hide portfolio summary
+        summarySection.style.display = 'none';
+      } else {
+        // All properties - show portfolio summary
+        summarySection.style.display = 'flex';
+        
+        // Calculate total portfolio value
+        const totalPortfolioValue = Object.values(PROPERTIES).reduce((sum, p) => sum + p.totalPrice, 0);
+        
+        const netPosition = totalIncome - totalGoal;
+        document.getElementById('totalPortfolioValue').textContent = `$${(totalPortfolioValue / 1000000).toFixed(2)}M`;
+        document.getElementById('totalMonthlyGoal').textContent = `$${totalGoal.toLocaleString()}`;
+        document.getElementById('totalBookingIncome').textContent = `$${totalIncome.toFixed(0)}`;
+        document.getElementById('netPosition').textContent = (netPosition >= 0 ? '+' : '-') + `$${Math.abs(netPosition).toFixed(0)}`;
+        document.getElementById('netPosition').style.color = netPosition >= 0 ? 'var(--primary)' : '#ef4444';
+        document.getElementById('propertiesOnTrack').textContent = `${onTrack}/${Object.keys(PROPERTIES).length}`;
+      }
+    }
+    
+    function renderBookings(filterPropertyId = null) {
+      const list = document.getElementById('bookingsList');
+      const count = document.getElementById('bookingsCount');
+      
+      // Filter bookings by property if specified
+      const displayBookings = filterPropertyId 
+        ? bookings.filter(b => b.propertyId === filterPropertyId)
+        : bookings;
+      
+      count.textContent = displayBookings.length;
+      
+      if (displayBookings.length === 0) {
+        list.innerHTML = filterPropertyId 
+          ? '<div class="no-bookings">No bookings for this property yet.</div>'
+          : '<div class="no-bookings">No bookings yet. Bookings from the user intake form will appear here.</div>';
+        return;
+      }
+      
+      list.innerHTML = displayBookings.map(booking => {
+        const property = booking.property || PROPERTIES[booking.propertyId] || { name: 'Unknown', address: '' };
+        const initials = getInitials(booking.guestName);
+        const eventsForBooking = getEventsForBooking(booking);
+        const bookingTypeLabel = booking.bookingType === 'room' 
+          ? `<span class="booking-type-label room">Room ${booking.roomNumber}</span>` 
+          : '<span class="booking-type-label full">Full Unit</span>';
+        
+        // Calculate price premium vs base rate
+        const isRoom = booking.bookingType === 'room';
+        const baseRate = isRoom ? (property.nightlyRoom || 85) : (property.nightlyFull || 185);
+        const nightlyRate = booking.nightlyRate || baseRate;
+        const pricePremium = Math.round((nightlyRate / baseRate - 1) * 100);
+        const hasDynamicPricing = pricePremium > 5;
+        
+        const priceInfo = booking.nightlyRate 
+          ? `<span class="price-info">$${booking.nightlyRate}/night</span>
+             ${hasDynamicPricing ? `<span class="dynamic-badge" title="Dynamic pricing: +${pricePremium}% from base $${baseRate}">📈 +${pricePremium}%</span>` : ''}
+             <span class="price-total">$${booking.totalPrice.toLocaleString()} total</span>`
+          : '';
+        
+        return `
+          <div class="booking-item" data-booking-id="${booking.id}">
+            <div class="booking-guest">
+              <div class="guest-avatar">${initials}</div>
+              <div class="guest-info">
+                <div class="guest-name">${booking.guestName}</div>
+                <div class="guest-email">${booking.guestEmail || ''}</div>
+              </div>
+            </div>
+            <div class="booking-property">
+              <div class="booking-property-name">${property.name}</div>
+              <div class="booking-property-address">${property.address}</div>
+              <div class="booking-type-price">${bookingTypeLabel} ${priceInfo}</div>
+            </div>
+            <div class="booking-dates">
+              <div class="booking-dates-range">${formatShortDate(booking.checkIn)} - ${formatShortDate(booking.checkOut)}</div>
+              <div class="booking-nights">${booking.nights} nights</div>
+            </div>
+            <div class="booking-events">
+              ${eventsForBooking.slice(0, 4).map(e => `
+                <span class="booking-event-chip ${e.type}" onclick="showEventDetail(${e.id})" title="${e.name} - ${e.venue}">
+                  ${truncate(e.name, 18)}
+                </span>
+              `).join('')}
+              ${eventsForBooking.length > 4 ? `<span class="booking-more-events">+${eventsForBooking.length - 4} more</span>` : ''}
+              ${eventsForBooking.length === 0 ? '<span class="booking-more-events">No events</span>' : ''}
+            </div>
+            <div class="booking-actions">
+              <button class="booking-btn receipt" onclick="viewBookingReceipt(${booking.id})">🧾 Receipt</button>
+              <button class="booking-btn view-events" onclick="viewBookingEvents(${booking.id})">View Events</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    
+    function formatShortDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    function truncate(str, len) {
+      return str.length > len ? str.substring(0, len) + '...' : str;
+    }
+    
+    function getEventsForBooking(booking) {
+      const property = booking.property || PROPERTIES[booking.propertyId];
+      if (!property) return [];
+      
+      const checkIn = new Date(booking.checkIn);
+      const checkOut = new Date(booking.checkOut);
+      
+      return filteredEvents.filter(e => {
+        const eventDate = new Date(e.dateStr);
+        return eventDate >= checkIn && eventDate < checkOut;
+      });
+    }
+    
+    function viewBookingEvents(bookingId) {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+      
+      const eventsForBooking = getEventsForBooking(booking);
+      const property = booking.property || PROPERTIES[booking.propertyId];
+      
+      document.getElementById('modalTitle').textContent = `Events for ${booking.guestName}`;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="modal-row">
+          <span class="modal-label">Property</span>
+          <span class="modal-value">${property?.name || 'Unknown'}</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Stay</span>
+          <span class="modal-value">${formatShortDate(booking.checkIn)} - ${formatShortDate(booking.checkOut)} (${booking.nights} nights)</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Events</span>
+          <span class="modal-value">${eventsForBooking.length} events during stay</span>
+        </div>
+        <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">
+        ${eventsForBooking.length > 0 ? eventsForBooking.map(e => `
+          <div style="padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid ${getTypeColor(e.type)};">
+            <div style="font-weight: 600; margin-bottom: 4px;">${e.name}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">📍 ${e.venue}</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">📅 ${new Date(e.dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at ${e.time}</div>
+          </div>
+        `).join('') : '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No events during this guest\'s stay 🌿</div>'}
+      `;
+      
+      document.getElementById('eventModal').classList.add('active');
+    }
+    
+    // View booking receipt with full cost breakdown including dynamic pricing
+    function viewBookingReceipt(bookingId) {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+      
+      const property = booking.property || PROPERTIES[booking.propertyId];
+      const isRoom = booking.bookingType === 'room';
+      const baseRate = isRoom ? (property?.nightlyRoom || 55) : (property?.nightlyFull || 189);
+      const nightlyRate = booking.nightlyRate || baseRate;
+      const nights = booking.nights || 1;
+      const subtotal = nightlyRate * nights;
+      const cleaningFee = isRoom ? 35 : 75;
+      const serviceFee = Math.round(subtotal * 0.12);
+      const taxes = Math.round(subtotal * 0.08);
+      const total = subtotal + cleaningFee + serviceFee + taxes;
+      
+      const bookingTypeText = isRoom ? `Private Room ${booking.roomNumber}` : 'Full Unit';
+      const checkInDate = new Date(booking.checkIn);
+      const checkOutDate = new Date(booking.checkOut);
+      
+      // Calculate dynamic pricing breakdown if PricingEngine is available
+      let pricingBreakdownHtml = '';
+      if (typeof PricingEngine !== 'undefined') {
+        const pricingEngine = new PricingEngine();
+        const bookingEvents = events.filter(e => {
+          const eventDate = new Date(e.dateStr);
+          return eventDate >= checkInDate && eventDate < checkOutDate;
+        });
+        
+        // Get pricing breakdown for mid-stay date
+        const midStayDate = new Date(checkInDate);
+        midStayDate.setDate(midStayDate.getDate() + Math.floor(nights / 2));
+        
+        const priceResult = pricingEngine.calculatePrice(baseRate, midStayDate, {
+          events: bookingEvents,
+          bookingType: booking.bookingType,
+          leadDays: 14 // Assume 2 weeks advance booking
+        });
+        
+        const breakdown = pricingEngine.getFactorBreakdown(priceResult);
+        const priceDiff = nightlyRate - baseRate;
+        const priceDiffPercent = ((nightlyRate / baseRate - 1) * 100).toFixed(0);
+        const isDynamic = Math.abs(priceDiff) > 1;
+        
+        // Build the pricing factor breakdown
+        const factorRows = breakdown.map(factor => {
+          const impactColor = factor.impact > 0 ? '#059669' : factor.impact < 0 ? '#dc2626' : 'var(--text-muted)';
+          const impactSign = factor.impact > 0 ? '+' : '';
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.85rem;">
+              <span style="display: flex; align-items: center; gap: 6px;">
+                <span>${factor.icon}</span>
+                <span style="color: var(--text-muted);">${factor.name}</span>
+              </span>
+              <span style="color: ${impactColor}; font-weight: 500;">${impactSign}${factor.impact}%</span>
+            </div>
+          `;
+        }).join('');
+        
+        pricingBreakdownHtml = `
+          <div style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05)); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span style="font-weight: 600; font-size: 0.95rem; color: var(--text);">📊 Dynamic Pricing Factors</span>
+              ${isDynamic ? `
+                <span style="background: ${priceDiff > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; 
+                             color: ${priceDiff > 0 ? '#dc2626' : '#059669'}; 
+                             padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                  ${priceDiff > 0 ? '▲' : '▼'} ${priceDiffPercent}% vs base
+                </span>
+              ` : `
+                <span style="background: rgba(156, 163, 175, 0.1); color: var(--text-muted); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">
+                  Base rate
+                </span>
+              `}
+            </div>
+            
+            <div style="padding: 8px 0; border-bottom: 1px solid var(--border-light); margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted);">
+                <span>Base rate (${bookingTypeText})</span>
+                <span>$${baseRate}/night</span>
+              </div>
+            </div>
+            
+            ${factorRows}
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--border-light);">
+              <span style="font-weight: 600; color: var(--text);">Final Rate</span>
+              <span style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">$${nightlyRate}/night</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      document.getElementById('modalTitle').textContent = `🧾 Booking Receipt`;
+      document.getElementById('modalBody').innerHTML = `
+        <div style="background: var(--bg-soft); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+          <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary); margin-bottom: 8px;">${property?.name || 'Property'}</div>
+          <div style="color: var(--text-muted); font-size: 0.9rem;">${property?.address || ''}</div>
+        </div>
+        
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Guest</span>
+          <span class="modal-value" style="font-weight: 600;">${booking.guestName}</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Email</span>
+          <span class="modal-value">${booking.guestEmail || '-'}</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Accommodation</span>
+          <span class="modal-value">${bookingTypeText}</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Check-in</span>
+          <span class="modal-value">${checkInDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} (3:00 PM)</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Check-out</span>
+          <span class="modal-value">${checkOutDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} (11:00 AM)</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Guests</span>
+          <span class="modal-value">${booking.guests || 1} guest${(booking.guests || 1) > 1 ? 's' : ''}</span>
+        </div>
+        <div class="modal-row" style="padding: 12px 0; border-bottom: 1px solid var(--border-light);">
+          <span class="modal-label">Reason for visit</span>
+          <span class="modal-value" style="text-transform: capitalize;">${booking.reason || '-'}</span>
+        </div>
+        
+        ${pricingBreakdownHtml}
+        
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--border);">
+          <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 12px;">💰 Cost Breakdown</div>
+          
+          <div class="modal-row" style="padding: 8px 0;">
+            <span class="modal-label">$${nightlyRate} × ${nights} nights</span>
+            <span class="modal-value">$${subtotal.toLocaleString()}</span>
+          </div>
+          <div class="modal-row" style="padding: 8px 0;">
+            <span class="modal-label">Cleaning fee</span>
+            <span class="modal-value">$${cleaningFee}</span>
+          </div>
+          <div class="modal-row" style="padding: 8px 0;">
+            <span class="modal-label">Service fee (12%)</span>
+            <span class="modal-value">$${serviceFee}</span>
+          </div>
+          <div class="modal-row" style="padding: 8px 0;">
+            <span class="modal-label">Taxes (8%)</span>
+            <span class="modal-value">$${taxes}</span>
+          </div>
+          
+          <div class="modal-row" style="padding: 16px 0; margin-top: 12px; border-top: 2px solid var(--primary); font-size: 1.2rem;">
+            <span class="modal-label" style="font-weight: 700; color: var(--text);">Total</span>
+            <span class="modal-value" style="font-weight: 700; color: var(--primary); font-size: 1.4rem;">$${total.toLocaleString()}</span>
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 12px; background: rgba(31, 157, 85, 0.1); border-radius: 8px; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+          Booking ID: #${booking.id} • ${booking.createdAt ? 'Created ' + new Date(booking.createdAt).toLocaleDateString() : ''}
+        </div>
+      `;
+      
+      document.getElementById('eventModal').classList.add('active');
+    }
+    
+    function getTypeColor(type) {
+      const colors = {
+        sports: '#f59e0b',
+        music: '#8b5cf6',
+        food: '#ef4444',
+        art: '#ec4899',
+        family: '#06b6d4'
+      };
+      return colors[type] || '#1f9d55';
+    }
+    
+    // ========== EVENTS ==========
+    function loadEvents() {
+      const rangeStart = new Date(document.getElementById('rangeStart').value);
+      const rangeEnd = new Date(document.getElementById('rangeEnd').value);
+      
+      // Generate sample events for the range
+      events = generateEventsForRange(rangeStart, rangeEnd);
+      filteredEvents = [...events];
+      updateStats();
+    }
+    
+    function generateEventsForRange(start, end) {
+      const eventTemplates = [
+        // Sports
+        { name: 'Atlanta Hawks vs Lakers', venue: 'State Farm Arena', type: 'sports', area: 'downtown', tags: ['NBA', 'Basketball'] },
+        { name: 'Atlanta United Match', venue: 'Mercedes-Benz Stadium', type: 'sports', area: 'downtown', tags: ['MLS', 'Soccer'] },
+        { name: 'Braves Game', venue: 'Truist Park', type: 'sports', area: 'midtown', tags: ['MLB', 'Baseball'] },
+        { name: 'Falcons Game', venue: 'Mercedes-Benz Stadium', type: 'sports', area: 'downtown', tags: ['NFL', 'Football'] },
+        
+        // Music
+        { name: 'Jazz Night', venue: 'Buckhead Theatre', type: 'music', area: 'buckhead', tags: ['Jazz', 'Live Music'] },
+        { name: 'Atlanta Symphony Orchestra', venue: 'Woodruff Arts Center', type: 'music', area: 'midtown', tags: ['Classical', 'Orchestra'] },
+        { name: 'Live at Eddie\'s Attic', venue: 'Eddie\'s Attic', type: 'music', area: 'decatur', tags: ['Indie', 'Local'] },
+        { name: 'Concert in Piedmont Park', venue: 'Piedmont Park', type: 'music', area: 'midtown', tags: ['Outdoor', 'Free'] },
+        
+        // Food
+        { name: 'Food Truck Friday', venue: 'Ponce City Market', type: 'food', area: 'midtown', tags: ['Food Trucks', 'Local'] },
+        { name: 'Wine Tasting', venue: 'Buckhead Village', type: 'food', area: 'buckhead', tags: ['Wine', 'Upscale'] },
+        { name: 'Craft Beer Festival', venue: 'Decatur Square', type: 'food', area: 'decatur', tags: ['Beer', 'Festival'] },
+        { name: 'Farmers Market', venue: 'Peachtree Road', type: 'food', area: 'buckhead', tags: ['Market', 'Local'] },
+        
+        // Art
+        { name: 'High Museum Exhibition', venue: 'High Museum of Art', type: 'art', area: 'midtown', tags: ['Art', 'Exhibition'] },
+        { name: 'Buckhead Art Walk', venue: 'Buckhead Village', type: 'art', area: 'buckhead', tags: ['Art Walk', 'Galleries'] },
+        { name: 'First Friday Art Walk', venue: 'Castleberry Hill', type: 'art', area: 'downtown', tags: ['Art', 'Monthly'] },
+        
+        // Family
+        { name: 'Georgia Aquarium Special', venue: 'Georgia Aquarium', type: 'family', area: 'downtown', tags: ['Family', 'Educational'] },
+        { name: 'Zoo Atlanta Event', venue: 'Zoo Atlanta', type: 'family', area: 'downtown', tags: ['Family', 'Animals'] },
+        { name: 'Sandy Springs Festival', venue: 'City Springs', type: 'family', area: 'sandy-springs', tags: ['Festival', 'Family'] },
+        { name: 'Children\'s Museum Day', venue: 'Children\'s Museum', type: 'family', area: 'downtown', tags: ['Kids', 'Educational'] }
+      ];
+      
+      const generatedEvents = [];
+      let currentDate = new Date(start);
+      let eventId = 1;
+      
+      while (currentDate <= end) {
+        // Random number of events per day (0-4)
+        const numEvents = Math.floor(Math.random() * 5);
+        
+        for (let i = 0; i < numEvents; i++) {
+          const template = eventTemplates[Math.floor(Math.random() * eventTemplates.length)];
+          generatedEvents.push({
+            id: eventId++,
+            ...template,
+            date: new Date(currentDate),
+            dateStr: formatDateForInput(currentDate),
+            time: `${Math.floor(Math.random() * 12) + 10}:00 ${Math.random() > 0.5 ? 'AM' : 'PM'}`
+          });
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      return generatedEvents;
+    }
+    
+    // Render calendar
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      // Update header
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+      
+      // Clear existing days (keep header)
+      const existingDays = grid.querySelectorAll('.calendar-day');
+      existingDays.forEach(day => day.remove());
+      
+      // Get first day of month and total days
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startingDay = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+      
+      // Previous month days
+      const prevMonth = new Date(year, month, 0);
+      const prevMonthDays = prevMonth.getDate();
+      
+      // Today for comparison
+      const today = new Date();
+      const todayStr = formatDateForInput(today);
+      
+      // Generate calendar days
+      let dayCount = 1;
+      let nextMonthDay = 1;
+      
+      for (let i = 0; i < 42; i++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        
+        let dateStr;
+        let dayNumber;
+        
+        if (i < startingDay) {
+          // Previous month
+          dayNumber = prevMonthDays - startingDay + i + 1;
+          dateStr = formatDateForInput(new Date(year, month - 1, dayNumber));
+          dayEl.classList.add('other-month');
+        } else if (dayCount > totalDays) {
+          // Next month
+          dayNumber = nextMonthDay++;
+          dateStr = formatDateForInput(new Date(year, month + 1, dayNumber));
+          dayEl.classList.add('other-month');
+        } else {
+          // Current month
+          dayNumber = dayCount++;
+          dateStr = formatDateForInput(new Date(year, month, dayNumber));
+          
+          if (dateStr === todayStr) {
+            dayEl.classList.add('today');
+          }
+        }
+        
+        // Get events for this day
+        const dayEvents = filteredEvents.filter(e => e.dateStr === dateStr);
+        const dayBookings = getBookingsForDate(dateStr);
+        const hasEvents = dayEvents.length > 0 || dayBookings.length > 0;
+        
+        // Build day content with booking stay indicators
+        dayEl.innerHTML = `
+          <div class="day-number ${hasEvents ? 'has-events' : ''}">${dayNumber}</div>
+          <div class="day-events">
+            ${dayBookings.map(b => {
+              const isCheckIn = b.checkIn === dateStr;
+              const checkOutDate = new Date(b.checkOut);
+              const currentDate = new Date(dateStr);
+              const nextDay = new Date(currentDate.getTime() + 86400000);
+              const isLastNight = nextDay.toISOString().split('T')[0] === b.checkOut;
+              const stayClass = isCheckIn ? 'stay-start' : isLastNight ? 'stay-end' : 'stay-mid';
+              const icon = isCheckIn ? '▶' : isLastNight ? '◀' : '';
+              const bookingTypeClass = b.bookingType === 'room' ? 'booking-room' : 'booking-full';
+              const roomLabel = b.bookingType === 'room' ? `R${b.roomNumber}` : '🏠';
+              return `
+              <div class="day-booking ${stayClass} ${bookingTypeClass}" onclick="viewBookingEvents(${b.id})" title="${b.guestName}: ${formatShortDate(b.checkIn)} → ${formatShortDate(b.checkOut)} (${b.nights} nights) - ${b.bookingType === 'room' ? 'Room ' + b.roomNumber : 'Full Unit'} @ $${b.nightlyRate || 0}/night">
+                ${icon ? '<span class="stay-icon">' + icon + '</span>' : ''}<span class="booking-type-badge">${roomLabel}</span><span class="guest-name">👤 ${b.guestName.split(' ')[0]}</span>
+              </div>`;
+            }).join('')}
+            ${dayEvents.slice(0, dayBookings.length > 0 ? 2 : 3).map(e => `
+              <div class="day-event ${e.type}" onclick="showEventDetail(${e.id})" title="${e.name}${e.distance ? ' - ' + e.distance + ' mi from unit' : ''}">
+                <span class="day-event-name">${e.name}</span>
+                ${e.distance ? `<span class="event-distance">${e.distance} mi</span>` : ''}
+              </div>
+            `).join('')}
+            ${(dayEvents.length + dayBookings.length) > 3 ? `<div class="more-events">+${dayEvents.length + dayBookings.length - 3} more</div>` : ''}
+          </div>
+        `;
+        
+        grid.appendChild(dayEl);
+        
+        // Stop after 6 weeks if we've passed the month
+        if (dayCount > totalDays && i >= 34) break;
+      }
+    }
+    
+    // Navigation
+    function changeMonth(delta) {
+      currentDate.setMonth(currentDate.getMonth() + delta);
+      renderCalendar();
+    }
+    
+    // Get bookings that overlap with a specific date (filtered by selected property)
+    function getBookingsForDate(dateStr) {
+      // Parse date string as local date (not UTC)
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const dateStart = new Date(year, month - 1, day, 0, 0, 0);
+      const dateEnd = new Date(year, month - 1, day, 23, 59, 59);
+      
+      return bookings.filter(b => {
+        // Filter by selected property if one is selected
+        if (selectedPropertyId && selectedPropertyId !== 'all' && b.propertyId !== selectedPropertyId) {
+          return false;
+        }
+        // Parse check-in/out as local dates
+        const [ciY, ciM, ciD] = b.checkIn.split('-').map(Number);
+        const [coY, coM, coD] = b.checkOut.split('-').map(Number);
+        const checkIn = new Date(ciY, ciM - 1, ciD, 0, 0, 0);
+        const checkOut = new Date(coY, coM - 1, coD, 0, 0, 0);
+        
+        // Guest is present if: dateStart >= checkIn AND dateStart < checkOut
+        return dateStart >= checkIn && dateStart < checkOut;
+      }).map(b => ({
+        ...b,
+        property: b.property || PROPERTIES[b.propertyId]
+      }));
+    }
+    
+    // ========== VIEW MANAGEMENT ==========
+    function updateViewForSelection(propertyId) {
+      selectedPropertyId = propertyId;
+      
+      const overviewPanel = document.getElementById('overviewPanel');
+      const selectedHeader = document.getElementById('selectedPropertyHeader');
+      const calendarContainer = document.getElementById('calendarContainer');
+      const bookingsPanel = document.getElementById('bookingsPanel');
+      const clearFilterBtn = document.getElementById('clearFilterBtn');
+      const propertyFilters = document.getElementById('propertyFilters');
+      const pageTitle = document.getElementById('pageTitle');
+      const refreshEventsBtn = document.getElementById('refreshEventsBtn');
+      
+      if (propertyId && propertyId !== 'all') {
+        // Property selected - show calendar, bookings, single property metric
+        const prop = PROPERTIES[propertyId];
+        
+        pageTitle.textContent = '📅 Events Calendar';
+        refreshEventsBtn.style.display = 'inline-block';
+        overviewPanel.style.display = 'none';
+        selectedHeader.style.display = 'flex';
+        calendarContainer.style.display = 'block';
+        bookingsPanel.style.display = 'block';
+        clearFilterBtn.style.display = 'inline-block';
+        propertyFilters.style.display = 'flex';
+        
+        // Update selected property header
+        document.getElementById('selectedPropertyName').textContent = prop.name;
+        document.getElementById('selectedPropertyAddress').textContent = `${prop.address} • Monthly Payment: $${prop.monthlyPayment.toLocaleString()}`;
+        
+        // Update stats and render filtered views
+        updateStats();
+        renderCalendar();
+        renderBookings(propertyId);
+        renderPropertyMetrics(propertyId);
+        
+        // Update quick stats
+        updateQuickStats(propertyId);
+      } else {
+        // No property selected - show overview with all property metrics
+        pageTitle.textContent = '🏠 Property Portfolio';
+        refreshEventsBtn.style.display = 'none';
+        overviewPanel.style.display = 'block';
+        selectedHeader.style.display = 'none';
+        calendarContainer.style.display = 'none';
+        bookingsPanel.style.display = 'none';
+        clearFilterBtn.style.display = 'none';
+        propertyFilters.style.display = 'none';
+        
+        // Show all properties metrics and overview bookings
+        renderPropertyMetrics(null);
+        renderOverviewBookings();
+      }
+    }
+    
+    // Render all bookings in portfolio overview
+    function renderOverviewBookings() {
+      const list = document.getElementById('allBookingsList');
+      const totalBookingsEl = document.getElementById('overviewTotalBookings');
+      const totalRevenueEl = document.getElementById('overviewTotalRevenue');
+      const propertiesBookedEl = document.getElementById('overviewPropertiesBooked');
+      
+      // Update stats
+      totalBookingsEl.textContent = bookings.length;
+      const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      totalRevenueEl.textContent = `$${totalRevenue.toLocaleString()}`;
+      const propertiesWithBookings = new Set(bookings.map(b => b.propertyId)).size;
+      propertiesBookedEl.textContent = propertiesWithBookings;
+      
+      if (bookings.length === 0) {
+        list.innerHTML = '<div class="no-bookings">No bookings yet. Click "Load Sample Data" to add sample bookings.</div>';
+        return;
+      }
+      
+      // Render all bookings
+      list.innerHTML = bookings.map(booking => {
+        const property = booking.property || PROPERTIES[booking.propertyId] || { name: 'Unknown', address: '' };
+        const initials = getInitials(booking.guestName);
+        const bookingTypeLabel = booking.bookingType === 'room' 
+          ? `<span class="booking-type-label room">Room ${booking.roomNumber}</span>` 
+          : '<span class="booking-type-label full">Full Unit</span>';
+        
+        return `
+          <div class="booking-item" data-booking-id="${booking.id}" onclick="goToProperty('${booking.propertyId}')" style="cursor: pointer;">
+            <div class="booking-guest">
+              <div class="guest-avatar">${initials}</div>
+              <div class="guest-info">
+                <div class="guest-name">${booking.guestName}</div>
+                <div class="guest-email">${booking.guestEmail || ''}</div>
+              </div>
+            </div>
+            <div class="booking-property">
+              <div class="booking-property-name">${property.name}</div>
+              <div class="booking-property-address">${property.address || ''}</div>
+              <div class="booking-type-price">${bookingTypeLabel} <span class="price-info">$${booking.totalPrice || 0}</span></div>
+            </div>
+            <div class="booking-dates">
+              <div class="booking-dates-range">${formatShortDate(booking.checkIn)} - ${formatShortDate(booking.checkOut)}</div>
+              <div class="booking-nights">${booking.nights} nights</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Navigate to property calendar
+    function goToProperty(propertyId) {
+      document.getElementById('areaFilter').value = propertyId;
+      onPropertySelect(propertyId);
+    }
+    
+    function updateQuickStats(propertyId) {
+      const prop = PROPERTIES[propertyId];
+      const propertyBookings = bookings.filter(b => b.propertyId === propertyId);
+      
+      // Calculate income for this property
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      let income = 0;
+      
+      propertyBookings.forEach(booking => {
+        const checkIn = new Date(booking.checkIn);
+        const checkOut = new Date(booking.checkOut);
+        let nightsInMonth = 0;
+        let currentDate = new Date(checkIn);
+        while (currentDate < checkOut) {
+          if (currentDate.getMonth() === currentMonth && currentDate.getFullYear() === currentYear) {
+            nightsInMonth++;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        const nightlyRate = (prop.monthlyPayment / 20) * 1.3;
+        income += nightsInMonth * nightlyRate;
+      });
+      
+      document.getElementById('quickStatEvents').textContent = filteredEvents.length;
+      document.getElementById('quickStatBookings').textContent = propertyBookings.length;
+      document.getElementById('quickStatIncome').textContent = `$${income.toFixed(0)}`;
+    }
+    
+    function onPropertySelect(propertyId) {
+      // Update the view by applying filters (this calculates distances)
+      if (propertyId === 'all') {
+        updateViewForSelection(null);
+      } else {
+        // Set the area filter and apply filters to calculate distances
+        applyFiltersForProperty(propertyId);
+      }
+    }
+    
+    function applyFiltersForProperty(propertyId) {
+      const type = document.getElementById('typeFilter').value;
+      const rangeStart = new Date(document.getElementById('rangeStart').value);
+      const rangeEnd = new Date(document.getElementById('rangeEnd').value);
+      
+      // Reload events for new range
+      events = generateEventsForRange(rangeStart, rangeEnd);
+      
+      // Get selected property for distance calculation
+      const selectedProperty = PROPERTIES[propertyId];
+      
+      if (selectedProperty) {
+        filteredEvents = events.map(e => {
+          // Add distance if venue exists
+          if (VENUES[e.venue]) {
+            const distance = calculateDistance(
+              selectedProperty.lat, selectedProperty.lng,
+              VENUES[e.venue].lat, VENUES[e.venue].lng
+            );
+            return { ...e, distance: distance.toFixed(1) };
+          }
+          return { ...e, distance: null };
+        }).filter(e => {
+          if (type !== 'all' && e.type !== type) return false;
+          return true;
+        });
+        
+        // Sort by distance
+        filteredEvents.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+      } else {
+        filteredEvents = events.filter(e => {
+          if (type !== 'all' && e.type !== type) return false;
+          return true;
+        });
+      }
+      
+      // Update view
+      updateViewForSelection(propertyId);
+    }
+    
+    function clearPropertyFilter() {
+      document.getElementById('areaFilter').value = 'all';
+      document.getElementById('typeFilter').value = 'all';
+      updateViewForSelection(null);
+    }
+    
+    // Filters
+    function applyFilters() {
+      const propertyId = document.getElementById('areaFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const rangeStart = new Date(document.getElementById('rangeStart').value);
+      const rangeEnd = new Date(document.getElementById('rangeEnd').value);
+      
+      // Reload events for new range
+      events = generateEventsForRange(rangeStart, rangeEnd);
+      
+      // Get selected property for distance calculation
+      const selectedProperty = propertyId !== 'all' ? PROPERTIES[propertyId] : null;
+      
+      filteredEvents = events.map(e => {
+        // Add distance if property is selected
+        if (selectedProperty && VENUES[e.venue]) {
+          const distance = calculateDistance(
+            selectedProperty.lat, selectedProperty.lng,
+            VENUES[e.venue].lat, VENUES[e.venue].lng
+          );
+          return { ...e, distance: distance.toFixed(1) };
+        }
+        return { ...e, distance: null };
+      }).filter(e => {
+        if (type !== 'all' && e.type !== type) return false;
+        return true;
+      });
+      
+      // Sort by distance if property is selected
+      if (selectedProperty) {
+        filteredEvents.sort((a, b) => (a.distance || 999) - (b.distance || 999));
+      }
+      
+      // Update view based on selection
+      updateViewForSelection(propertyId);
+    }
+    
+    function refreshEvents() {
+      loadEvents();
+      renderCalendar();
+    }
+    
+    // Stats
+    function updateStats() {
+      document.getElementById('totalEvents').textContent = filteredEvents.length;
+      document.getElementById('totalBookings').textContent = bookings.length;
+      
+      // Find peak day
+      const dayCounts = {};
+      filteredEvents.forEach(e => {
+        dayCounts[e.dateStr] = (dayCounts[e.dateStr] || 0) + 1;
+      });
+      
+      let peakDay = '-';
+      let peakCount = 0;
+      Object.entries(dayCounts).forEach(([date, count]) => {
+        if (count > peakCount) {
+          peakCount = count;
+          peakDay = new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+      });
+      document.getElementById('peakDay').textContent = peakDay;
+      
+      // Find top category
+      const typeCounts = {};
+      filteredEvents.forEach(e => {
+        typeCounts[e.type] = (typeCounts[e.type] || 0) + 1;
+      });
+      
+      let topType = '-';
+      let topCount = 0;
+      Object.entries(typeCounts).forEach(([type, count]) => {
+        if (count > topCount) {
+          topCount = count;
+          topType = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+      });
+      document.getElementById('topCategory').textContent = topType;
+    }
+    
+    // Event detail modal
+    function showEventDetail(eventId) {
+      const event = filteredEvents.find(e => e.id === eventId) || events.find(e => e.id === eventId);
+      if (!event) return;
+      
+      // Get selected property for distance
+      const propertyId = document.getElementById('areaFilter').value;
+      const selectedProperty = propertyId !== 'all' ? PROPERTIES[propertyId] : null;
+      let distance = event.distance;
+      
+      // Calculate distance if property selected and not already calculated
+      if (selectedProperty && VENUES[event.venue] && !distance) {
+        distance = calculateDistance(
+          selectedProperty.lat, selectedProperty.lng,
+          VENUES[event.venue].lat, VENUES[event.venue].lng
+        ).toFixed(1);
+      }
+      
+      document.getElementById('modalTitle').textContent = event.name;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="modal-row">
+          <span class="modal-label">Date</span>
+          <span class="modal-value">${event.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Time</span>
+          <span class="modal-value">${event.time}</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Venue</span>
+          <span class="modal-value">${event.venue}</span>
+        </div>
+        ${distance ? `
+        <div class="modal-row">
+          <span class="modal-label">Distance</span>
+          <span class="modal-value" style="color: var(--primary);">📍 ${distance} miles from ${selectedProperty.name}</span>
+        </div>
+        ` : ''}
+        <div class="modal-row">
+          <span class="modal-label">Area</span>
+          <span class="modal-value">${event.area.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+        </div>
+        <div class="modal-row">
+          <span class="modal-label">Type</span>
+          <span class="modal-value">${event.type.charAt(0).toUpperCase() + event.type.slice(1)}</span>
+        </div>
+        <div class="event-tags">
+          ${event.tags.map(tag => `<span class="event-tag">${tag}</span>`).join('')}
+        </div>
+      `;
+      
+      document.getElementById('eventModal').classList.add('active');
+    }
+    
+    function closeModal() {
+      document.getElementById('eventModal').classList.remove('active');
+    }
+    
+    // Close modal on outside click
+    document.getElementById('eventModal').addEventListener('click', (e) => {
+      if (e.target.id === 'eventModal') closeModal();
+    });
+    
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closePropertyModal();
+      }
+    });
+    
+    // =============================================
+    // Property Management Functions
+    // =============================================
+    
+    function openAddPropertyModal() {
+      editingPropertyId = null;
+      document.getElementById('propertyModalTitle').textContent = 'Add New Property';
+      document.getElementById('savePropertyBtn').textContent = 'Add Property';
+      clearPropertyForm();
+      document.getElementById('propertyModal').classList.add('active');
+    }
+    
+    function openEditPropertyModal(propertyId) {
+      editingPropertyId = propertyId;
+      const prop = PROPERTIES[propertyId];
+      if (!prop) return;
+      
+      document.getElementById('propertyModalTitle').textContent = 'Edit Property';
+      document.getElementById('savePropertyBtn').textContent = 'Update Property';
+      
+      // Populate form with existing data
+      document.getElementById('zillowUrl').value = prop.sourceUrl || '';
+      document.getElementById('propName').value = prop.name || '';
+      document.getElementById('propAddress').value = prop.address || '';
+      document.getElementById('propCity').value = prop.city || 'Atlanta';
+      document.getElementById('propState').value = prop.state || 'GA';
+      document.getElementById('propZip').value = prop.zip || '';
+      document.getElementById('propArea').value = prop.area || 'other';
+      document.getElementById('propBedrooms').value = prop.bedrooms || '';
+      document.getElementById('propBathrooms').value = prop.bathrooms || '';
+      document.getElementById('propSqft').value = prop.sqft || '';
+      document.getElementById('propYearBuilt').value = prop.yearBuilt || '';
+      document.getElementById('propType').value = prop.type || 'condo';
+      document.getElementById('propHoa').value = prop.hoa || '';
+      document.getElementById('propTotalPrice').value = prop.totalPrice || '';
+      document.getElementById('propDownPayment').value = prop.downPayment || '';
+      document.getElementById('propMonthlyPayment').value = prop.monthlyPayment || '';
+      document.getElementById('propMonthlyRent').value = prop.monthlyRent || '';
+      document.getElementById('propTaxes').value = prop.taxes || '';
+      document.getElementById('propInsurance').value = prop.insurance || '';
+      document.getElementById('propLat').value = prop.coords ? prop.coords[0] : (prop.lat || '');
+      document.getElementById('propLng').value = prop.coords ? prop.coords[1] : (prop.lng || '');
+      document.getElementById('propNotes').value = prop.notes || '';
+      
+      // Rental configuration fields
+      document.getElementById('propRentableRooms').value = prop.rentableRooms || 0;
+      document.getElementById('propNightlyFull').value = prop.nightlyFull || '';
+      document.getElementById('propNightlyRoom').value = prop.nightlyRoom || '';
+      document.getElementById('propMaxGuestsFull').value = prop.maxGuestsFull || '';
+      document.getElementById('propMaxGuestsRoom').value = prop.maxGuestsRoom || '';
+      if (document.getElementById('amenSharedSpaces')) {
+        document.getElementById('amenSharedSpaces').checked = prop.sharedSpaces || false;
+      }
+      if (document.getElementById('amenPrivateBath')) {
+        document.getElementById('amenPrivateBath').checked = prop.privateBath || false;
+      }
+      
+      // Set amenities checkboxes
+      const amenities = prop.amenities || [];
+      document.getElementById('amenPool').checked = amenities.includes('pool');
+      document.getElementById('amenHotTub').checked = amenities.includes('hottub');
+      document.getElementById('amenGym').checked = amenities.includes('gym');
+      document.getElementById('amenParking').checked = amenities.includes('parking');
+      document.getElementById('amenDoorman').checked = amenities.includes('doorman');
+      document.getElementById('amenLaundry').checked = amenities.includes('laundry');
+      document.getElementById('amenBalcony').checked = amenities.includes('balcony');
+      document.getElementById('amenDishwasher').checked = amenities.includes('dishwasher');
+      document.getElementById('amenAC').checked = amenities.includes('ac');
+      document.getElementById('amenPets').checked = amenities.includes('pets');
+      document.getElementById('amenStorage').checked = amenities.includes('storage');
+      document.getElementById('amenElevator').checked = amenities.includes('elevator');
+      document.getElementById('amenRooftop').checked = amenities.includes('rooftop');
+      
+      // Show data history in status
+      const statusDiv = document.getElementById('scrapeStatus');
+      const createdDate = prop.createdAt 
+        ? new Date(prop.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : 'Dec 16, 2025';
+      const lastUpdated = prop.lastUpdated 
+        ? new Date(prop.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : null;
+      const source = prop.sourceUrl ? 'Zillow Import' : (prop.isCustom ? 'Manual Entry' : 'Original Data');
+      
+      statusDiv.innerHTML = `
+        <div class="data-history">
+          <div class="history-row"><span>📋 Source:</span> <span>${source}</span></div>
+          <div class="history-row"><span>📅 Created:</span> <span>${createdDate}</span></div>
+          ${lastUpdated ? `<div class="history-row"><span>🔄 Last Updated:</span> <span>${lastUpdated}</span></div>` : ''}
+          ${prop.sourceUrl ? `<div class="history-row"><span>🔗 Link:</span> <a href="${prop.sourceUrl}" target="_blank" style="color: var(--primary);">View on Zillow</a></div>` : ''}
+        </div>
+      `;
+      statusDiv.style.display = 'block';
+      
+      document.getElementById('propertyModal').classList.add('active');
+    }
+    
+    function closePropertyModal() {
+      document.getElementById('propertyModal').classList.remove('active');
+      clearPropertyForm();
+      editingPropertyId = null;
+    }
+    
+    function clearPropertyForm() {
+      document.getElementById('zillowUrl').value = '';
+      document.getElementById('propName').value = '';
+      document.getElementById('propAddress').value = '';
+      document.getElementById('propCity').value = 'Atlanta';
+      document.getElementById('propState').value = 'GA';
+      document.getElementById('propZip').value = '';
+      document.getElementById('propArea').value = 'buckhead';
+      document.getElementById('propBedrooms').value = '';
+      document.getElementById('propBathrooms').value = '';
+      document.getElementById('propSqft').value = '';
+      document.getElementById('propYearBuilt').value = '';
+      document.getElementById('propType').value = 'condo';
+      document.getElementById('propHoa').value = '';
+      document.getElementById('propTotalPrice').value = '';
+      document.getElementById('propDownPayment').value = '';
+      document.getElementById('propMonthlyPayment').value = '';
+      document.getElementById('propMonthlyRent').value = '';
+      document.getElementById('propTaxes').value = '';
+      document.getElementById('propInsurance').value = '';
+      document.getElementById('propLat').value = '';
+      document.getElementById('propLng').value = '';
+      document.getElementById('propNotes').value = '';
+      
+      // Clear rental configuration
+      document.getElementById('propRentableRooms').value = '';
+      document.getElementById('propNightlyFull').value = '';
+      document.getElementById('propNightlyRoom').value = '';
+      document.getElementById('propMaxGuestsFull').value = '';
+      document.getElementById('propMaxGuestsRoom').value = '';
+      
+      // Clear amenity checkboxes
+      ['amenPool', 'amenHotTub', 'amenGym', 'amenParking', 'amenDoorman', 'amenLaundry', 
+       'amenBalcony', 'amenDishwasher', 'amenAC', 'amenPets', 'amenStorage', 
+       'amenElevator', 'amenRooftop', 'amenSharedSpaces', 'amenPrivateBath'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+      });
+      
+      document.getElementById('scrapeStatus').innerHTML = '';
+    }
+    
+    async function scrapeZillowListing() {
+      const url = document.getElementById('zillowUrl').value.trim();
+      const statusDiv = document.getElementById('scrapeStatus');
+      
+      if (!url) {
+        statusDiv.innerHTML = '<span class="scrape-error">⚠️ Please enter a Zillow URL</span>';
+        return;
+      }
+      
+      if (!url.includes('zillow.com')) {
+        statusDiv.innerHTML = '<span class="scrape-error">⚠️ Please enter a valid Zillow URL</span>';
+        return;
+      }
+      
+      statusDiv.innerHTML = '<span class="scrape-loading">⏳ Attempting to fetch property data...</span>';
+      
+      // Note: Direct scraping from browser is blocked by CORS.
+      // In a real application, you'd use a backend proxy or API.
+      // For now, we'll show instructions for manual entry.
+      
+      try {
+        // Try using a CORS proxy (these are unreliable and may not work)
+        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+        const response = await fetch(proxyUrl);
+        const data = await response.json();
+        
+        if (data.contents) {
+          // Try to parse basic info from HTML
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(data.contents, 'text/html');
+          
+          // Try to extract data (Zillow's structure changes frequently)
+          let extracted = extractZillowData(data.contents);
+          
+          if (extracted.address) {
+            // Populate form with extracted data
+            if (extracted.address) {
+              document.getElementById('propAddress').value = extracted.address;
+              document.getElementById('propName').value = extracted.address.split(',')[0] || extracted.address;
+            }
+            if (extracted.price) document.getElementById('propTotalPrice').value = extracted.price;
+            if (extracted.bedrooms) document.getElementById('propBedrooms').value = extracted.bedrooms;
+            if (extracted.bathrooms) document.getElementById('propBathrooms').value = extracted.bathrooms;
+            if (extracted.sqft) document.getElementById('propSqft').value = extracted.sqft;
+            if (extracted.yearBuilt) document.getElementById('propYearBuilt').value = extracted.yearBuilt;
+            if (extracted.city) document.getElementById('propCity').value = extracted.city;
+            if (extracted.zip) document.getElementById('propZip').value = extracted.zip;
+            if (extracted.lat) document.getElementById('propLat').value = extracted.lat;
+            if (extracted.lng) document.getElementById('propLng').value = extracted.lng;
+            if (extracted.hoa) document.getElementById('propHoa').value = extracted.hoa;
+            if (extracted.monthlyPayment) document.getElementById('propMonthlyPayment').value = extracted.monthlyPayment;
+            
+            statusDiv.innerHTML = '<span class="scrape-success">✅ Data extracted! Please verify and fill in any missing fields.</span>';
+          } else {
+            statusDiv.innerHTML = `<span class="scrape-error">⚠️ Could not extract data. Zillow blocks scraping. Please fill in details manually.</span>`;
+          }
+        }
+      } catch (error) {
+        console.error('Scrape error:', error);
+        statusDiv.innerHTML = `
+          <span class="scrape-error">
+            ⚠️ Unable to scrape (CORS restriction). Please fill in details manually.<br>
+            <small style="color: var(--text-muted);">Tip: Open the Zillow listing and copy the details</small>
+          </span>`;
+      }
+    }
+    
+    function extractZillowData(html) {
+      const result = {};
+      
+      try {
+        // Try to find JSON-LD data
+        const jsonLdMatch = html.match(/<script type="application\/ld\+json">({.*?})<\/script>/s);
+        if (jsonLdMatch) {
+          const jsonData = JSON.parse(jsonLdMatch[1]);
+          if (jsonData['@type'] === 'SingleFamilyResidence' || jsonData['@type'] === 'Apartment') {
+            result.address = jsonData.address?.streetAddress;
+            result.city = jsonData.address?.addressLocality;
+            result.zip = jsonData.address?.postalCode;
+            result.lat = jsonData.geo?.latitude;
+            result.lng = jsonData.geo?.longitude;
+          }
+        }
+        
+        // Try regex patterns for common Zillow data
+        const priceMatch = html.match(/\$([0-9,]+)<\/span>.*?price/i) || html.match(/"price":([0-9]+)/);
+        if (priceMatch) result.price = priceMatch[1].replace(/,/g, '');
+        
+        const bedMatch = html.match(/(\d+)\s*bd/i) || html.match(/"bedrooms":(\d+)/);
+        if (bedMatch) result.bedrooms = bedMatch[1];
+        
+        const bathMatch = html.match(/(\d+\.?\d*)\s*ba/i) || html.match(/"bathrooms":(\d+\.?\d*)/);
+        if (bathMatch) result.bathrooms = bathMatch[1];
+        
+        const sqftMatch = html.match(/([0-9,]+)\s*sqft/i) || html.match(/"livingArea":([0-9,]+)/);
+        if (sqftMatch) result.sqft = sqftMatch[1].replace(/,/g, '');
+        
+        const yearMatch = html.match(/Built in (\d{4})/i) || html.match(/"yearBuilt":(\d{4})/);
+        if (yearMatch) result.yearBuilt = yearMatch[1];
+        
+      } catch (e) {
+        console.error('Extract error:', e);
+      }
+      
+      return result;
+    }
+    
+    function generatePropertyId(name) {
+      return name.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 30);
+    }
+    
+    function getSelectedAmenities() {
+      const amenities = [];
+      if (document.getElementById('amenPool').checked) amenities.push('pool');
+      if (document.getElementById('amenHotTub').checked) amenities.push('hottub');
+      if (document.getElementById('amenGym').checked) amenities.push('gym');
+      if (document.getElementById('amenParking').checked) amenities.push('parking');
+      if (document.getElementById('amenDoorman').checked) amenities.push('doorman');
+      if (document.getElementById('amenLaundry').checked) amenities.push('laundry');
+      if (document.getElementById('amenBalcony').checked) amenities.push('balcony');
+      if (document.getElementById('amenDishwasher').checked) amenities.push('dishwasher');
+      if (document.getElementById('amenAC').checked) amenities.push('ac');
+      if (document.getElementById('amenPets').checked) amenities.push('pets');
+      if (document.getElementById('amenStorage').checked) amenities.push('storage');
+      if (document.getElementById('amenElevator').checked) amenities.push('elevator');
+      if (document.getElementById('amenRooftop').checked) amenities.push('rooftop');
+      return amenities;
+    }
+    
+    function saveProperty() {
+      // Validate required fields
+      const name = document.getElementById('propName').value.trim();
+      const address = document.getElementById('propAddress').value.trim();
+      const bedrooms = document.getElementById('propBedrooms').value;
+      const bathrooms = document.getElementById('propBathrooms').value;
+      const totalPrice = document.getElementById('propTotalPrice').value;
+      const monthlyPayment = document.getElementById('propMonthlyPayment').value;
+      const monthlyRent = document.getElementById('propMonthlyRent').value;
+      
+      if (!name || !address || !bedrooms || !bathrooms || !totalPrice || !monthlyPayment || !monthlyRent) {
+        alert('Please fill in all required fields (marked with *)');
+        return;
+      }
+      
+      // Create property object
+      const propertyId = editingPropertyId || generatePropertyId(name);
+      const existingProp = PROPERTIES[propertyId] || {};
+      const zillowUrl = document.getElementById('zillowUrl').value.trim();
+      
+      // Rental configuration
+      const rentableRooms = parseInt(document.getElementById('propRentableRooms').value) || 0;
+      const nightlyFull = parseInt(document.getElementById('propNightlyFull').value) || Math.round((parseInt(monthlyRent) / 30) * 1.3);
+      const nightlyRoom = parseInt(document.getElementById('propNightlyRoom').value) || Math.round(nightlyFull / (parseInt(bedrooms) || 2));
+      const maxGuestsFull = parseInt(document.getElementById('propMaxGuestsFull').value) || parseInt(bedrooms) * 2;
+      const maxGuestsRoom = parseInt(document.getElementById('propMaxGuestsRoom').value) || 2;
+      
+      const property = {
+        name,
+        address,
+        city: document.getElementById('propCity').value || 'Atlanta',
+        state: document.getElementById('propState').value || 'GA',
+        zip: document.getElementById('propZip').value,
+        area: document.getElementById('propArea').value || 'other',
+        bedrooms: parseInt(bedrooms),
+        bathrooms: parseFloat(bathrooms),
+        sqft: parseInt(document.getElementById('propSqft').value) || null,
+        yearBuilt: parseInt(document.getElementById('propYearBuilt').value) || null,
+        type: document.getElementById('propType').value || 'condo',
+        hoa: parseInt(document.getElementById('propHoa').value) || 0,
+        totalPrice: parseInt(totalPrice),
+        downPayment: parseInt(document.getElementById('propDownPayment').value) || 0,
+        monthlyPayment: parseInt(monthlyPayment),
+        monthlyRent: parseInt(monthlyRent),
+        taxes: parseInt(document.getElementById('propTaxes').value) || 0,
+        insurance: parseInt(document.getElementById('propInsurance').value) || 0,
+        // Rental configuration
+        rentableRooms,
+        nightlyFull,
+        nightlyRoom: rentableRooms > 0 ? nightlyRoom : 0,
+        maxGuestsFull,
+        maxGuestsRoom: rentableRooms > 0 ? maxGuestsRoom : 0,
+        sharedSpaces: document.getElementById('amenSharedSpaces')?.checked || false,
+        privateBath: document.getElementById('amenPrivateBath')?.checked || false,
+        // Location
+        lat: parseFloat(document.getElementById('propLat').value) || 33.8100,
+        lng: parseFloat(document.getElementById('propLng').value) || -84.3900,
+        coords: [
+          parseFloat(document.getElementById('propLat').value) || 33.8100,
+          parseFloat(document.getElementById('propLng').value) || -84.3900
+        ],
+        amenities: getSelectedAmenities(),
+        notes: document.getElementById('propNotes').value,
+        isCustom: true, // Mark as user-added/modified property
+        sourceUrl: zillowUrl || existingProp.sourceUrl || null,
+        createdAt: existingProp.createdAt || new Date().toISOString(),
+        lastUpdated: editingPropertyId ? new Date().toISOString() : null
+      };
+      
+      // Add or update property
+      PROPERTIES[propertyId] = property;
+      
+      // Save to localStorage
+      saveCustomProperties();
+      
+      // Update UI
+      updatePropertyFilter();
+      renderPropertyMetrics();
+      
+      // Close modal
+      closePropertyModal();
+      
+      // Show confirmation
+      alert(editingPropertyId ? 'Property updated!' : 'Property added to portfolio!');
+    }
+    
+    function removeProperty(propertyId) {
+      if (!confirm('Are you sure you want to remove this property from your portfolio?')) {
+        return;
+      }
+      
+      delete PROPERTIES[propertyId];
+      saveCustomProperties();
+      
+      // Reset filter if this property was selected
+      const filter = document.getElementById('propertyFilter');
+      if (filter.value === propertyId) {
+        filter.value = '';
+        updateViewForSelection('');
+      }
+      
+      updatePropertyFilter();
+      renderPropertyMetrics();
+    }
+    
+    async function saveCustomProperties() {
+      // Save all custom properties to IndexedDB
+      try {
+        for (const [id, prop] of Object.entries(PROPERTIES)) {
+          if (prop.isCustom) {
+            prop.id = id;
+            await PropertiesDB.save(prop);
+          }
+        }
+        console.log('Custom properties saved to IndexedDB');
+      } catch (e) {
+        console.error('Error saving custom properties:', e);
+      }
+    }
+    
+    async function loadCustomProperties() {
+      try {
+        const allProps = await PropertiesDB.getAll();
+        for (const prop of allProps) {
+          if (prop.isCustom && prop.id) {
+            PROPERTIES[prop.id] = prop;
+          }
+        }
+        updatePropertyFilter();
+        console.log('Custom properties loaded from IndexedDB');
+      } catch (e) {
+        console.error('Error loading custom properties:', e);
+      }
+    }
+    
+    // ========== DATABASE ADMIN FUNCTIONS ==========
+    async function clearAllData() {
+      if (!confirm('⚠️ Clear ALL bookings and custom properties?\n\nThis cannot be undone!')) return;
+      try {
+        await DatabaseUtils.clearAll();
+        bookings = [];
+        updateViewForSelection(selectedPropertyId);
+        alert('✅ All data cleared!');
+      } catch (e) {
+        alert('Error clearing data: ' + e.message);
+      }
+    }
+    
+    async function exportAllData() {
+      try {
+        const json = await DatabaseUtils.exportData();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `vividoasis-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Export error: ' + e.message);
+      }
+    }
+    
+    async function importDataFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          await DatabaseUtils.importData(text);
+          await loadBookingsFromStorage();
+          await loadCustomProperties();
+          updateViewForSelection(selectedPropertyId);
+          alert('✅ Data imported successfully!');
+        } catch (e) {
+          alert('Import error: ' + e.message);
+        }
+      };
+      input.click();
+    }
+    
+    function updatePropertyFilter() {
+      const filter = document.getElementById('propertyFilter');
+      const currentValue = filter.value;
+      
+      // Clear options except first
+      filter.innerHTML = '<option value="">— Select Property —</option>';
+      
+      // Add all properties
+      Object.entries(PROPERTIES).forEach(([id, prop]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = prop.name + (prop.isCustom ? ' ⭐' : '');
+        filter.appendChild(option);
+      });
+      
+      // Restore selection if still valid
+      if (PROPERTIES[currentValue]) {
+        filter.value = currentValue;
+      }
+    }
+    
+    // Close property modal on outside click
+    document.getElementById('propertyModal').addEventListener('click', (e) => {
+      if (e.target.id === 'propertyModal') closePropertyModal();
+    });
+    
+    // Initialize database and load data on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await initDB();
+        await loadCustomProperties();
+        await loadBookingsFromStorage();
+        updateViewForSelection(selectedPropertyId);
+        console.log('✅ VividOasis Admin initialized with IndexedDB');
+      } catch (e) {
+        console.error('Initialization error:', e);
+      }
+    });
+  </script>
+</body>
+</html>

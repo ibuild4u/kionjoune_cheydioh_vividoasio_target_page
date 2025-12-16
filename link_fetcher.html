@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Info Fetcher</title>
+  <link rel="stylesheet" href="green.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #1f9d55;
+      min-height: 100vh;
+      padding: 40px 20px;
+      margin: 0;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #1f9d55;
+      padding-bottom: 10px;
+    }
+    
+    .fetch-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    
+    .fetch-form .input {
+      flex: 1;
+    }
+    
+    .result-container {
+      display: none;
+      margin-top: 30px;
+    }
+    
+    .result-container.active {
+      display: block;
+    }
+    
+    .result-card {
+      border: 1px solid rgba(31, 157, 85, 0.3);
+      border-radius: 8px;
+      padding: 24px;
+      background: rgba(31, 157, 85, 0.05);
+    }
+    
+    .result-title {
+      font-size: 1.25rem;
+      margin: 0 0 20px 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(31, 157, 85, 0.3);
+    }
+    
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .result-item {
+      padding: 12px;
+      background: rgba(31, 157, 85, 0.08);
+      border-radius: 4px;
+    }
+    
+    .result-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    
+    .result-value {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .result-link {
+      grid-column: 1 / -1;
+      word-break: break-all;
+    }
+    
+    .result-link a {
+      color: #1f9d55;
+      text-decoration: none;
+    }
+    
+    .result-link a:hover {
+      text-decoration: underline;
+    }
+    
+    .amenities-list {
+      grid-column: 1 / -1;
+    }
+    
+    .amenities-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .amenity-tag {
+      background: rgba(31, 157, 85, 0.2);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      opacity: 0.7;
+    }
+    
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: #1f9d55;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .error {
+      color: #ef4444;
+      padding: 20px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(31, 157, 85, 0.3);
+    }
+    
+    .tab {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: rgba(31, 157, 85, 0.6);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .tab:hover {
+      color: #1f9d55;
+    }
+    
+    .tab.active {
+      color: #1f9d55;
+      border-bottom: 2px solid #1f9d55;
+      margin-bottom: -2px;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .tab-hint {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-bottom: 16px;
+    }
+    
+    .tab-hint a {
+      color: #1f9d55;
+    }
+    
+    .file-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .meta-preview {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(31, 157, 85, 0.3);
+    }
+    
+    .meta-preview img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    
+    .meta-description {
+      margin-top: 10px;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Link Info Fetcher</h1>
+    
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('paste')">Paste JSON</button>
+      <button class="tab" onclick="switchTab('url')">Fetch URL</button>
+      <button class="tab" onclick="switchTab('file')">Load File</button>
+    </div>
+    
+    <!-- Paste JSON Tab -->
+    <div id="tab-paste" class="tab-content active">
+      <div class="mod--ui-input">
+        <p class="tab-hint">Use the <a href="a_link_fetch/b_abstraction/bookmarklet_20251214172346.html" target="_blank">bookmarklet</a> on Zillow, then paste the JSON here:</p>
+        <textarea 
+          id="jsonInput" 
+          class="input" 
+          placeholder='Paste JSON from bookmarklet here...'
+          rows="6"
+        ></textarea>
+        <div class="mod--ui-button" style="margin-top: 12px;">
+          <button class="btn btn--primary" onclick="parseJSON()">Parse JSON</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Fetch URL Tab -->
+    <div id="tab-url" class="tab-content">
+      <div class="mod--ui-input">
+        <p class="tab-hint">Note: Many sites (like Zillow) block external requests. Use the bookmarklet instead.</p>
+        <div class="fetch-form">
+          <input 
+            type="url" 
+            id="linkInput" 
+            class="input" 
+            placeholder="Enter a URL to fetch info..."
+            value=""
+          >
+          <div class="mod--ui-button">
+            <button class="btn btn--primary" onclick="fetchLinkInfo()">Fetch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Load File Tab -->
+    <div id="tab-file" class="tab-content">
+      <div class="mod--ui-input">
+        <p class="tab-hint">Load from your saved JSON files:</p>
+        <div class="file-buttons">
+          <div class="mod--ui-button">
+            <button class="btn btn--primary" onclick="loadSampleData()">Load Sample Data</button>
+          </div>
+          <div class="mod--ui-button">
+            <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="loadFile(event)">
+            <button class="btn btn--secondary" onclick="document.getElementById('fileInput').click()">Choose File</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="resultContainer" class="result-container">
+      <!-- Results will be displayed here -->
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+    
+    // Parse pasted JSON (from bookmarklet)
+    function parseJSON() {
+      const input = document.getElementById('jsonInput');
+      const container = document.getElementById('resultContainer');
+      const jsonStr = input.value.trim();
+      
+      if (!jsonStr) {
+        container.innerHTML = '<div class="error">Please paste JSON data</div>';
+        container.classList.add('active');
+        return;
+      }
+      
+      try {
+        const data = JSON.parse(jsonStr);
+        displayPropertyData(data);
+      } catch (e) {
+        container.innerHTML = `<div class="error">Invalid JSON: ${e.message}</div>`;
+        container.classList.add('active');
+      }
+    }
+    
+    // Load sample data from your existing file
+    function loadSampleData() {
+      const sampleData = {
+        "properties": [
+          {
+            "id": "property_01",
+            "link": "https://www.zillow.com/homedetails/200-River-Vista-Dr-UNIT-743-Sandy-Springs-GA-30339/112430606_zpid/",
+            "address": "200 River Vista Dr UNIT 743, Sandy Springs, GA 30339",
+            "totalPrice": 369900,
+            "monthlyRent": 2708,
+            "estimatedMonthlyPayment": 2450,
+            "bedrooms": 2,
+            "bathrooms": 2,
+            "sqft": 1172,
+            "propertyType": "Condo",
+            "yearBuilt": 2010,
+            "amenities": ["Pool", "Fitness Center", "Spa", "Clubhouse", "Dishwasher", "Fireplace", "Balcony", "Patio", "Walk-in Closet", "Central Air", "Garage", "Parking", "Gated Community", "Security"]
+          }
+        ]
+      };
+      displayPropertyData(sampleData);
+    }
+    
+    // Load from file
+    function loadFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          displayPropertyData(data);
+        } catch (err) {
+          const container = document.getElementById('resultContainer');
+          container.innerHTML = `<div class="error">Invalid JSON file: ${err.message}</div>`;
+          container.classList.add('active');
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    // Display property data (from bookmarklet/JSON)
+    function displayPropertyData(data) {
+      const container = document.getElementById('resultContainer');
+      const properties = data.properties || [data];
+      
+      let html = '';
+      properties.forEach(prop => {
+        const amenitiesHtml = prop.amenities?.length ? `
+          <div class="result-item amenities-list">
+            <div class="result-label">Amenities</div>
+            <div class="amenities-tags">
+              ${prop.amenities.map(a => `<span class="amenity-tag">${escapeHtml(a)}</span>`).join('')}
+            </div>
+          </div>
+        ` : '';
+        
+        html += `
+          <div class="result-card">
+            <h2 class="result-title">${escapeHtml(prop.address || 'Property')}</h2>
+            
+            <div class="result-grid">
+              ${prop.totalPrice ? `
+              <div class="result-item">
+                <div class="result-label">Price</div>
+                <div class="result-value">$${prop.totalPrice.toLocaleString()}</div>
+              </div>
+              ` : ''}
+              
+              ${prop.bedrooms ? `
+              <div class="result-item">
+                <div class="result-label">Bedrooms</div>
+                <div class="result-value">${prop.bedrooms} bd</div>
+              </div>
+              ` : ''}
+              
+              ${prop.bathrooms ? `
+              <div class="result-item">
+                <div class="result-label">Bathrooms</div>
+                <div class="result-value">${prop.bathrooms} ba</div>
+              </div>
+              ` : ''}
+              
+              ${prop.sqft ? `
+              <div class="result-item">
+                <div class="result-label">Square Feet</div>
+                <div class="result-value">${prop.sqft.toLocaleString()} sqft</div>
+              </div>
+              ` : ''}
+              
+              ${prop.monthlyRent ? `
+              <div class="result-item">
+                <div class="result-label">Est. Rent</div>
+                <div class="result-value">$${prop.monthlyRent.toLocaleString()}/mo</div>
+              </div>
+              ` : ''}
+              
+              ${prop.estimatedMonthlyPayment ? `
+              <div class="result-item">
+                <div class="result-label">Est. Payment</div>
+                <div class="result-value">$${prop.estimatedMonthlyPayment.toLocaleString()}/mo</div>
+              </div>
+              ` : ''}
+              
+              ${prop.yearBuilt ? `
+              <div class="result-item">
+                <div class="result-label">Year Built</div>
+                <div class="result-value">${prop.yearBuilt}</div>
+              </div>
+              ` : ''}
+              
+              ${prop.propertyType ? `
+              <div class="result-item">
+                <div class="result-label">Type</div>
+                <div class="result-value">${escapeHtml(prop.propertyType)}</div>
+              </div>
+              ` : ''}
+              
+              ${prop.link ? `
+              <div class="result-item result-link">
+                <div class="result-label">Link</div>
+                <div class="result-value">
+                  <a href="${escapeHtml(prop.link)}" target="_blank" rel="noopener">${escapeHtml(prop.link)}</a>
+                </div>
+              </div>
+              ` : ''}
+              
+              ${amenitiesHtml}
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      container.classList.add('active');
+    }
+
+    // Enter key support
+    document.getElementById('linkInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') fetchLinkInfo();
+    });
+
+    async function fetchLinkInfo() {
+      const input = document.getElementById('linkInput');
+      const container = document.getElementById('resultContainer');
+      const url = input.value.trim();
+      
+      if (!url) {
+        container.innerHTML = '<div class="error">Please enter a URL</div>';
+        container.classList.add('active');
+        return;
+      }
+      
+      // Validate URL
+      try {
+        new URL(url);
+      } catch {
+        container.innerHTML = '<div class="error">Please enter a valid URL</div>';
+        container.classList.add('active');
+        return;
+      }
+      
+      // Show loading
+      container.innerHTML = '<div class="loading">Fetching link information</div>';
+      container.classList.add('active');
+      
+      try {
+        // Use a CORS proxy for fetching external URLs
+        // Note: For production, you'd want your own backend
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        
+        const response = await fetch(proxyUrl);
+        const data = await response.json();
+        
+        if (data.contents) {
+          const html = data.contents;
+          const info = extractMetaInfo(html, url);
+          displayResults(info);
+        } else {
+          throw new Error('Could not fetch the URL');
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        
+        // Fallback: Show basic URL info
+        displayResults({
+          url: url,
+          title: new URL(url).hostname,
+          description: 'Could not fetch full details. The site may block external requests.',
+          image: null,
+          domain: new URL(url).hostname,
+          error: true
+        });
+      }
+    }
+    
+    function extractMetaInfo(html, originalUrl) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      // Extract meta tags
+      const getMeta = (name) => {
+        const el = doc.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+        return el ? el.getAttribute('content') : null;
+      };
+      
+      const title = getMeta('og:title') || 
+                    doc.querySelector('title')?.textContent || 
+                    'No title found';
+      
+      const description = getMeta('og:description') || 
+                          getMeta('description') || 
+                          '';
+      
+      let image = getMeta('og:image') || getMeta('twitter:image');
+      
+      // Handle relative image URLs
+      if (image && !image.startsWith('http')) {
+        const baseUrl = new URL(originalUrl);
+        image = new URL(image, baseUrl.origin).href;
+      }
+      
+      const siteName = getMeta('og:site_name') || new URL(originalUrl).hostname;
+      const type = getMeta('og:type') || 'website';
+      
+      // Extract price if it's a property listing
+      const priceMatch = html.match(/\$(\d{1,3}(?:,\d{3})*)/);
+      const price = priceMatch ? priceMatch[0] : null;
+      
+      // Extract any structured data
+      let structuredData = null;
+      const jsonLdScript = doc.querySelector('script[type="application/ld+json"]');
+      if (jsonLdScript) {
+        try {
+          structuredData = JSON.parse(jsonLdScript.textContent);
+        } catch (e) {
+          // Ignore JSON parse errors
+        }
+      }
+      
+      return {
+        url: originalUrl,
+        title: title,
+        description: description,
+        image: image,
+        siteName: siteName,
+        type: type,
+        domain: new URL(originalUrl).hostname,
+        price: price,
+        structuredData: structuredData
+      };
+    }
+    
+    function displayResults(info) {
+      const container = document.getElementById('resultContainer');
+      
+      let amenitiesHtml = '';
+      if (info.structuredData?.amenityFeature) {
+        amenitiesHtml = `
+          <div class="result-item amenities-list">
+            <div class="result-label">Amenities</div>
+            <div class="amenities-tags">
+              ${info.structuredData.amenityFeature.map(a => 
+                `<span class="amenity-tag">${a.name || a}</span>`
+              ).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = `
+        <div class="result-card">
+          <h2 class="result-title">${escapeHtml(info.title)}</h2>
+          
+          <div class="result-grid">
+            <div class="result-item">
+              <div class="result-label">Site</div>
+              <div class="result-value">${escapeHtml(info.siteName || info.domain)}</div>
+            </div>
+            
+            <div class="result-item">
+              <div class="result-label">Type</div>
+              <div class="result-value">${escapeHtml(info.type || 'Website')}</div>
+            </div>
+            
+            ${info.price ? `
+            <div class="result-item">
+              <div class="result-label">Price</div>
+              <div class="result-value">${escapeHtml(info.price)}</div>
+            </div>
+            ` : ''}
+            
+            <div class="result-item result-link">
+              <div class="result-label">URL</div>
+              <div class="result-value">
+                <a href="${escapeHtml(info.url)}" target="_blank" rel="noopener">${escapeHtml(info.url)}</a>
+              </div>
+            </div>
+            
+            ${amenitiesHtml}
+          </div>
+          
+          ${info.description || info.image ? `
+          <div class="meta-preview">
+            ${info.description ? `<div class="meta-description">${escapeHtml(info.description)}</div>` : ''}
+            ${info.image ? `<img src="${escapeHtml(info.image)}" alt="Preview" onerror="this.style.display='none'">` : ''}
+          </div>
+          ` : ''}
+        </div>
+      `;
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

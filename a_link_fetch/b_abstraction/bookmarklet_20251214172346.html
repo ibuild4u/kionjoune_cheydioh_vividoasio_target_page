@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zillow Data Extractor - Bookmarklet</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    .bookmarklet {
+      background: #0066cc;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: bold;
+      margin: 20px 0;
+      cursor: move;
+    }
+    .bookmarklet:hover {
+      background: #0052a3;
+    }
+    .instructions {
+      background: #fff9e6;
+      padding: 15px;
+      border-left: 4px solid #ffc107;
+      margin: 20px 0;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Monaco', monospace;
+    }
+    .step {
+      margin: 10px 0;
+      padding-left: 25px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏠 Zillow Property Data Extractor</h1>
+    
+    <div class="instructions">
+      <h3>📖 How to Use:</h3>
+      <div class="step"><strong>1.</strong> Drag the blue button below to your bookmarks bar</div>
+      <div class="step"><strong>2.</strong> Open any Zillow property page</div>
+      <div class="step"><strong>3.</strong> Click the bookmark</div>
+      <div class="step"><strong>4.</strong> Data will be copied to your clipboard!</div>
+    </div>
+    
+    <h3>🔖 Drag this to your bookmarks bar:</h3>
+    <a href="javascript:(function(){const extractNumber=(text)=>{if(!text)return 0;const match=text.match(/[\d,]+/);return match?parseInt(match[0].replace(/,/g,'')):0;};const cleanText=(text)=>text?.trim().replace(/\s+/g,' ')||'';let address='';let totalPrice=0;let bedrooms=0;let bathrooms=0;let sqft=0;let monthlyRent=0;let estimatedMonthlyPayment=0;let propertyType='';let yearBuilt=0;let lotSize='';let parking='';let cooling='';let heating='';let amenities=[];const addressEl=document.querySelector('h1');if(addressEl){address=cleanText(addressEl.textContent);}const allText=document.body.innerText;const priceMatch=allText.match(/\$(\d{3,}(?:,\d{3})*)/);if(priceMatch){totalPrice=extractNumber(priceMatch[0]);}const bedMatch=allText.match(/(\d+)\s*bd/i);if(bedMatch){bedrooms=parseInt(bedMatch[1]);}const bathMatch=allText.match(/(\d+)\s*ba/i);if(bathMatch){bathrooms=parseInt(bathMatch[1]);}const sqftMatch=allText.match(/([\d,]+)\s*sqft/i);if(sqftMatch){sqft=extractNumber(sqftMatch[1]);}const rentMatch=allText.match(/Rent\s*Zestimate.*?\$(\d{1,3}(?:,\d{3})*)/is);if(rentMatch){monthlyRent=extractNumber(rentMatch[1]);}const paymentMatch=allText.match(/Est\.\s*payment.*?\$(\d{1,3}(?:,\d{3})*)/is)||allText.match(/monthly\s*payment.*?\$(\d{1,3}(?:,\d{3})*)/is);if(paymentMatch){estimatedMonthlyPayment=extractNumber(paymentMatch[1]);}const typeMatch=allText.match(/Type:\s*([^\n]+)/i)||allText.match(/(Single Family|Condo|Townhouse|Multi-Family|Apartment)/i);if(typeMatch){propertyType=cleanText(typeMatch[1]);}const yearMatch=allText.match(/Built\s*in\s*(\d{4})/i)||allText.match(/Year\s*built:\s*(\d{4})/i);if(yearMatch){yearBuilt=parseInt(yearMatch[1]);}const lotMatch=allText.match(/Lot:\s*([^\n]+)/i)||allText.match(/([\d,\.]+)\s*acres?/i);if(lotMatch){lotSize=cleanText(lotMatch[1]);}const parkingMatch=allText.match(/Parking:\s*([^\n]+)/i)||allText.match(/(\d+)\s*garage/i);if(parkingMatch){parking=cleanText(parkingMatch[1]);}const coolingMatch=allText.match(/Cooling:\s*([^\n]+)/i);if(coolingMatch){cooling=cleanText(coolingMatch[1]);}const heatingMatch=allText.match(/Heating:\s*([^\n]+)/i);if(heatingMatch){heating=cleanText(heatingMatch[1]);}const commonAmenities=['Pool','Gym','Fitness Center','Spa','Hot Tub','Tennis Court','Basketball Court','Clubhouse','Pet Friendly','Washer/Dryer','Dishwasher','Fireplace','Balcony','Patio','Deck','Hardwood Floors','Stainless Steel Appliances','Granite Countertops','Walk-in Closet','Central Air','Garage','Parking','Gated Community','Security','Concierge','Doorman','Elevator'];commonAmenities.forEach(amenity=>{if(allText.toLowerCase().includes(amenity.toLowerCase())){amenities.push(amenity);}});const data={id:'property_01',link:window.location.href,address:address,totalPrice:totalPrice,monthlyRent:monthlyRent,estimatedMonthlyPayment:estimatedMonthlyPayment,bedrooms:bedrooms,bathrooms:bathrooms,sqft:sqft,propertyType:propertyType,yearBuilt:yearBuilt,lotSize:lotSize,parking:parking,cooling:cooling,heating:heating,amenities:amenities};const json=JSON.stringify({properties:[data]},null,2);navigator.clipboard.writeText(json);const popup=document.createElement('div');popup.style.cssText='position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:20px 30px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:999999;font-family:sans-serif;font-size:14px;max-width:300px;';popup.innerHTML='✅ Property data copied!<br><small>Price: $'+totalPrice.toLocaleString()+'<br>'+bedrooms+' bd, '+bathrooms+' ba, '+sqft.toLocaleString()+' sqft<br>Amenities: '+amenities.length+'</small>';document.body.appendChild(popup);setTimeout(()=>popup.remove(),5000);console.log('Extracted data:',data);})();" class="bookmarklet">
+      📊 Extract Zillow Data
+    </a>
+    
+    <h3>💡 What it does:</h3>
+    <ul>
+      <li>Extracts property address, price, beds, baths, sqft</li>
+      <li>Formats it as JSON matching your structure</li>
+      <li>Copies it to your clipboard automatically</li>
+      <li>Shows a confirmation message</li>
+    </ul>
+    
+    <h3>📋 Alternative: Copy the code</h3>
+    <p>If you can't drag the bookmark, open your browser console (F12) on a Zillow page and paste this:</p>
+    <details>
+      <summary>Click to see the code</summary>
+      <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;"><code id="bookmarkletCode"></code></pre>
+    </details>
+  </div>
+
+  <script>
+    // Display the bookmarklet code in readable format
+    const code = `const extractNumber = (text) => {
+  if (!text) return 0;
+  const match = text.match(/[\\d,]+/);
+  return match ? parseInt(match[0].replace(/,/g, '')) : 0;
+};
+
+const cleanText = (text) => text?.trim().replace(/\\s+/g, ' ') || '';
+
+let address = '';
+let totalPrice = 0;
+let bedrooms = 0;
+let bathrooms = 0;
+let sqft = 0;
+
+// Extract address
+const addressEl = document.querySelector('h1');
+if (addressEl) {
+  address = cleanText(addressEl.textContent);
+}
+
+// Extract data from page text
+const allText = document.body.innerText;
+
+const priceMatch = allText.match(/\\$[\\d,]+/);
+if (priceMatch) totalPrice = extractNumber(priceMatch[0]);
+
+const bedMatch = allText.match(/(\\d+)\\s*bd/i);
+if (bedMatch) bedrooms = parseInt(bedMatch[1]);
+
+const bathMatch = allText.match(/(\\d+)\\s*ba/i);
+if (bathMatch) bathrooms = parseInt(bathMatch[1]);
+
+const sqftMatch = allText.match(/([\\d,]+)\\s*sqft/i);
+if (sqftMatch) sqft = extractNumber(sqftMatch[1]);
+
+// Create data structure
+const data = {
+  id: 'property_01',
+  link: window.location.href,
+  address: address,
+  totalPrice: totalPrice,
+  monthlyRent: 0,
+  estimatedMonthlyPayment: 0,
+  bedrooms: bedrooms,
+  bathrooms: bathrooms,
+  sqft: sqft
+};
+
+// Copy to clipboard
+const json = JSON.stringify({ properties: [data] }, null, 2);
+navigator.clipboard.writeText(json);
+
+// Show confirmation
+const popup = document.createElement('div');
+popup.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:20px 30px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:999999;font-family:sans-serif;font-size:16px;';
+popup.innerHTML = '✅ Property data copied to clipboard!';
+document.body.appendChild(popup);
+setTimeout(() => popup.remove(), 3000);
+
+console.log('Extracted data:', data);`;
+
+    document.getElementById('bookmarkletCode').textContent = code;
+  </script>
+</body>
+</html>
