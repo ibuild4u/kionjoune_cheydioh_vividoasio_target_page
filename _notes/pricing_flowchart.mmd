@@ -1,0 +1,243 @@
+```mermaid
+---
+title: VividOasis Dynamic Pricing Flow
+---
+flowchart TB
+    subgraph PROVIDER["🏠 PROVIDER (Property Owner)"]
+        P1[Set Base Rate]
+        P2[Define Min/Max Bounds]
+        P3[Property Details]
+    end
+
+    subgraph PLATFORM["⚙️ PLATFORM (VividOasis Engine)"]
+        subgraph FACTORS["Pricing Factors"]
+            F1["📅 Events\n(30% weight)"]
+            F2["🌴 Seasonality\n(25% weight)"]
+            F3["📆 Day of Week\n(15% weight)"]
+            F4["⏰ Lead Time\n(10% weight)"]
+            F5["📊 Occupancy\n(10% weight)"]
+            F6["🏪 Competition\n(10% weight)"]
+        end
+        
+        CALC["🧮 Calculate:\nFinal = Base × Σ(weight × factor)"]
+        
+        BOUNDS["🔒 Apply Bounds:\n70% ≤ multiplier ≤ 200%"]
+        
+        FEES["💰 Add Fees:\n• Cleaning\n• Service (12%)\n• Tax (8%)"]
+    end
+
+    subgraph USER["👤 USER (Guest)"]
+        U1["See Final Price"]
+        U2["View Breakdown"]
+        U3["Book Property"]
+    end
+
+    P1 --> CALC
+    P2 --> BOUNDS
+    P3 --> F5
+    
+    F1 --> CALC
+    F2 --> CALC
+    F3 --> CALC
+    F4 --> CALC
+    F5 --> CALC
+    F6 --> CALC
+    
+    CALC --> BOUNDS
+    BOUNDS --> FEES
+    FEES --> U1
+    U1 --> U2
+    U2 --> U3
+
+    style PROVIDER fill:#e8f5e9,stroke:#2e7d32
+    style PLATFORM fill:#e3f2fd,stroke:#1565c0
+    style USER fill:#fff3e0,stroke:#ef6c00
+    style FACTORS fill:#f3e5f5,stroke:#7b1fa2
+```
+
+---
+
+```mermaid
+---
+title: Nightly Rate Calculation Detail
+---
+flowchart LR
+    subgraph INPUT["Input"]
+        BASE["Base Rate\n$185"]
+        DATE["Check-in Date\nDec 27, 2025"]
+    end
+
+    subgraph FACTORS["Factor Analysis"]
+        E["Events\nPeach Bowl\n→ 1.50"]
+        S["Season\nChristmas\n→ 1.40"]
+        D["Day\nFriday\n→ 1.20"]
+        L["Lead\n11 days\n→ 1.00"]
+        O["Occupancy\n85%\n→ 1.15"]
+        C["Competition\nNo data\n→ 1.00"]
+    end
+
+    subgraph WEIGHT["Weighted Calculation"]
+        W1["0.30 × 0.50 = 0.15"]
+        W2["0.25 × 0.40 = 0.10"]
+        W3["0.15 × 0.20 = 0.03"]
+        W4["0.10 × 0.00 = 0.00"]
+        W5["0.10 × 0.15 = 0.015"]
+        W6["0.10 × 0.00 = 0.00"]
+        SUM["Σ = 0.295\n(+29.5%)"]
+    end
+
+    subgraph OUTPUT["Output"]
+        FINAL["Final Rate\n$185 × 1.295\n= $240/night"]
+    end
+
+    BASE --> FACTORS
+    DATE --> FACTORS
+    
+    E --> W1
+    S --> W2
+    D --> W3
+    L --> W4
+    O --> W5
+    C --> W6
+    
+    W1 --> SUM
+    W2 --> SUM
+    W3 --> SUM
+    W4 --> SUM
+    W5 --> SUM
+    W6 --> SUM
+    
+    SUM --> FINAL
+
+    style INPUT fill:#e8f5e9
+    style FACTORS fill:#fff3e0
+    style WEIGHT fill:#e3f2fd
+    style OUTPUT fill:#ffebee
+```
+
+---
+
+```mermaid
+---
+title: Complete Booking Price Flow
+---
+flowchart TB
+    subgraph NIGHTS["Per-Night Calculation"]
+        N1["Night 1: $176\n(Tue, -5%)"]
+        N2["Night 2: $176\n(Wed, -5%)"]
+        N3["Night 3: $194\n(Thu, +5%)"]
+        N4["Night 4: $222\n(Fri, +20%)"]
+        N5["Night 5: $222\n(Sat, +20%)"]
+    end
+
+    SUBTOTAL["Subtotal\n$990"]
+    
+    subgraph FEES["Fee Layer"]
+        CLEAN["Cleaning: $75"]
+        SERVICE["Service (12%): $119"]
+        TAX["Tax (8%): $79"]
+    end
+
+    TOTAL["💵 TOTAL: $1,263"]
+
+    N1 --> SUBTOTAL
+    N2 --> SUBTOTAL
+    N3 --> SUBTOTAL
+    N4 --> SUBTOTAL
+    N5 --> SUBTOTAL
+    
+    SUBTOTAL --> CLEAN
+    SUBTOTAL --> SERVICE
+    SUBTOTAL --> TAX
+    
+    CLEAN --> TOTAL
+    SERVICE --> TOTAL
+    TAX --> TOTAL
+
+    style NIGHTS fill:#e8f5e9
+    style FEES fill:#fff3e0
+    style TOTAL fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+```
+
+---
+
+```mermaid
+---
+title: Factor Response Curves
+---
+xychart-beta
+    title "Occupancy Factor Response"
+    x-axis "Occupancy %" [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    y-axis "Multiplier" 0.8 --> 1.3
+    line [0.90, 0.90, 0.90, 0.95, 0.95, 1.00, 1.00, 1.00, 1.15, 1.25, 1.25]
+```
+
+---
+
+```mermaid
+---
+title: Seasonal Pricing Calendar
+---
+gantt
+    title Seasonal Multipliers Throughout Year
+    dateFormat  MM-DD
+    axisFormat %b
+    
+    section Off-Season (0.90)
+    January     :off1, 01-01, 01-31
+    February    :off2, 02-01, 02-28
+    
+    section Regular (1.00)
+    March       :reg1, 03-01, 03-31
+    April       :reg2, 04-01, 04-30
+    October     :reg3, 10-01, 10-31
+    
+    section Summer (1.15)
+    June        :sum1, 06-01, 06-30
+    July        :sum2, 07-01, 07-31
+    August      :sum3, 08-01, 08-31
+    
+    section Holidays (1.20-1.40)
+    Memorial Day    :hol1, 05-25, 05-31
+    July 4th        :hol2, 07-01, 07-07
+    Labor Day       :hol3, 09-01, 09-07
+    Thanksgiving    :hol4, 11-20, 11-30
+    Christmas/NYE   :hol5, 12-20, 12-31
+```
+
+---
+
+```mermaid
+---
+title: System Architecture
+---
+flowchart TB
+    subgraph FRONTEND["Frontend (HTML/JS)"]
+        GUEST["guest_intake.html\nBooking Form"]
+        ADMIN["events_calendar_admin.html\nAdmin Dashboard"]
+        AUTH["auth.html\nPassword Gate"]
+    end
+
+    subgraph ENGINE["Pricing Engine"]
+        PE["pricing-engine.js\n• calculatePrice()\n• Factor calculations\n• Fee computation"]
+    end
+
+    subgraph DATA["Data Layer"]
+        DB["db.js\n(IndexedDB)"]
+        PROPS["Properties Store"]
+        BOOKS["Bookings Store"]
+        EVENTS["Events Store"]
+    end
+
+    AUTH --> ADMIN
+    GUEST --> PE
+    ADMIN --> PE
+    PE --> DB
+    DB --> PROPS
+    DB --> BOOKS
+    DB --> EVENTS
+
+    style FRONTEND fill:#e3f2fd
+    style ENGINE fill:#fff3e0
+    style DATA fill:#e8f5e9
+```
